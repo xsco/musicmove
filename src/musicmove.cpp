@@ -20,13 +20,12 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-#include <fileref.h>
-#include <tpropertymap.h>
-
 #include <algorithm>
 #include <iostream>
-#include <sstream>
 #include <vector>
+
+#include "context.hpp"
+#include "move.hpp"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -48,76 +47,6 @@ static void print_usage(std::ostream &os, const po::options_description &od)
        << endl;
 }
 
-static void process_file(const fs::path &p, const po::variables_map &vm)
-{
-    TagLib::FileRef f{p.c_str()};
-    
-    // Does this file have any audio properties?
-    if (f.audioProperties() == nullptr)
-    {
-        cerr << "No audio properties found for file "
-             << p << ".. skipping" << endl;
-        return;
-    }
-    
-    // Does this file have a tag?
-    auto *tag = f.tag();
-    if (tag == nullptr)
-    {
-        cerr << "No tag found for file " << p << ".. skipping" << endl;
-        return;
-    }
-    
-    auto props = tag->properties();
-    stringstream ss;
-    
-    // FIXME temp
-    if (props.isEmpty())
-    {
-        ss << "(none)";
-    }
-    else
-    {
-        auto begin = props.begin();
-        ss << begin->first;
-        for_each(++begin, props.end(),
-            [&ss](auto &kve) { ss << ", " << kve.first; });
-    }
-    
-    // TODO - check filename and directory name validity, according to Boost:
-    // www.boost.org/doc/libs/1_58_0/libs/filesystem/doc/portability_guide.htm
-    
-    // TODO - convert weird characters in filenames
-    
-    cout << "File: " << p << ", tags: " << ss.str() << endl;
-}
-
-static void process_path(const fs::path &p, const po::variables_map &vm)
-{
-    if (!exists(p))
-    {
-        cerr << "Warning: path does not exist: " << p << endl;
-        return;
-    }
-
-    // Regular file or dir?
-    if (fs::is_directory(p))
-    {
-        // It's a directory.  Recurse over everything within.
-        for_each(fs::directory_iterator{p},
-                 fs::directory_iterator{},
-                 [&vm](auto &de) { process_path(de.path(), vm); });
-        
-        // Is the directory now empty?
-        // TODO - remove the directory if it is now empty
-    }
-    else
-    {
-        // Read as a file.
-        process_file(p, vm);
-    }
-};
-
 int main(int argc, char *argv[])
 {
     // Command-line options visible in the help screen
@@ -131,6 +60,8 @@ int main(int argc, char *argv[])
             "whether to simulate or rename for real")
         ("verbose,v", po::bool_switch(),
             "print additional messages about what's going on")
+        ("very-verbose", po::bool_switch(),
+            "print even more messages about what's going on")
         ("help,h", po::bool_switch(),
             "display this help screen")
         ;
@@ -180,12 +111,23 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // Form context struct
+    mm::context ctx;
+    ctx.format = vm["format"].as<string>();
+    ctx.base_dir = fs::path{vm["base-dir"].as<string>()};
+    ctx.simulate = vm["simulate"].as<bool>();
+    ctx.verbose = ctx.very_verbose = false;
+    ctx.verbose = vm["verbose"].as<bool>();
+    ctx.very_verbose = vm["very-verbose"].as<bool>();
+    if (ctx.very_verbose)
+        ctx.verbose = true;
+
     // Process specified paths
     const vector<string> &paths = vm["path"].as<vector<string>>();
     for (auto &path_str : paths)
     {
         fs::path p{path_str};
-        process_path(p, vm);
+        mm::process_path(p, ctx);
     }
     
     return 0;

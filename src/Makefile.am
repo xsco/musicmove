@@ -1,7 +1,10 @@
 bin_PROGRAMS = musicmove
 
 # Source files.
-musicmove_SOURCES = musicmove.cpp
+musicmove_SOURCES = \
+	musicmove.cpp \
+	context.hpp \
+	move.cpp move.hpp
 
 # Compiler flags.
 musicmove_CPPFLAGS = \
