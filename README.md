@@ -24,6 +24,15 @@ You can then install the package (with sufficient privileges) by issuing:
 
     # make install
 
+Any arguments you might normally pass to `configure` can instead be passed
+to `autogen.sh`, such as:
+
+    $ ./autogen.sh --prefix=/usr/custom_directory
+
+or:
+
+    $ ./autogen.sh --help
+
 Dependencies
 ------------
 

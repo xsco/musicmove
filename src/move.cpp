@@ -166,7 +166,6 @@ static string get_property_safe(const TagLib::Tag &tag, const char *name,
 static fs::path format_path_easytag(const fs::path &file, const string &format,
                             const TagLib::Tag &tag, const context &ctx)
 {
-    // TODO - replace tokens
     // Replace tokens in a format string.  Expect EasyTag-style expressions
     // %a - Track artist
     // %b - Album
@@ -187,18 +186,27 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
 
     auto props = tag.properties();
     string new_path;
-    new_path.reserve(format.length());
+    string::size_type len = format.length();
     string::size_type last_start = 0;
+    stringstream err_msg;
+    new_path.reserve(format.length());
     for (auto found = format.find_first_of('%');
          found != string::npos;
-         found = format.find_first_of('%', found + 1))
+         last_start = found + 1, found = format.find_first_of('%', found + 1))
     {
         // Copy anything found so far to the new path
         if (found > 0 && found > last_start)
             new_path.append(format, last_start, found - last_start);
         
-        auto c = format[++found];
-        last_start = ++found;
+        // Ensure no unfinished tokens at end of string
+        ++found;
+        if (found == len)
+        {
+            err_msg << "Unmatched `%' sign at end of format string";
+            throw std::invalid_argument(err_msg.str().c_str());
+        }
+    
+        auto c = format[found];
         string val;
         switch (c)
         {
@@ -221,14 +229,14 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
                 new_path.append(get_property_safe(tag, "GENRE"));
                 break;
             case 'l':
-                // TODO
+                // TODO get number of tracks from either dedicated tag or TRACKNUMBER
                 //new_path.append(get_property_safe(tag, "")); // Number of tracks?
                 break;
             case 'n':
                 new_path.append(get_property_safe(tag, "TRACKNUMBER"));
                 break;
             case 'o':
-                // TODO
+                // TODO get original artist tag
                 //new_path.append(get_property_safe(tag, "")); // Original artist?
                 break;
             case 'p':
@@ -241,11 +249,11 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
                 new_path.append(get_property_safe(tag, "TITLE"));
                 break;
             case 'u':
-                // TODO
+                // TODO get URL tag
                 //new_path.append(get_property_safe(tag, "")); // URL?
                 break;
             case 'x':
-                // TODO
+                // TODO get number of discs tag from somewhere
                 //new_path.append(get_property_safe(tag, "")); // Number of discs?
                 break;
             case 'y':
@@ -263,9 +271,8 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
                 new_path.append("%");
                 break;
             default:
-                stringstream msg;
-                msg << "Unknown format specifier `%" << c << "'";
-                throw std::out_of_range(msg.str().c_str());
+                err_msg << "Unknown format specifier `%" << c << "'";
+                throw std::out_of_range(err_msg.str().c_str());
                 break;
         }
     }
@@ -311,7 +318,9 @@ move_results move_file(const fs::path &file, const context &ctx)
     
     // TODO - convert weird characters in filenames
 
-    // TODO - check if already exists
+    // TODO - see if the new path is actually any different
+
+    // TODO - check to see if new path already exists
     
     if (ctx.simulate)
     {
@@ -323,7 +332,7 @@ move_results move_file(const fs::path &file, const context &ctx)
     {
         if (ctx.verbose)
             cout << "Renaming from " << file << " to " << new_file << endl;
-        // TODO - rename
+        // TODO - actually rename the file
     }
 
     if (file.parent_path() != new_file.parent_path())

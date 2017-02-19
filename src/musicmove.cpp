@@ -127,7 +127,15 @@ int main(int argc, char *argv[])
     for (auto &path_str : paths)
     {
         fs::path p{path_str};
-        mm::process_path(p, ctx);
+        try
+        {
+            mm::process_path(p, ctx);
+        }
+        catch (std::exception &e)
+        {
+            cerr << e.what() << endl;
+            return 1;
+        }
     }
     
     return 0;
