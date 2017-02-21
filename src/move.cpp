@@ -233,7 +233,11 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
                 //new_path.append(get_property_safe(tag, "")); // Number of tracks?
                 break;
             case 'n':
-                new_path.append(get_property_safe(tag, "TRACKNUMBER"));
+                // Pad with zero if the number is only one character long
+                val = get_property_safe(tag, "TRACKNUMBER");
+                if (val.length() == 1)
+                    val.insert(0, 1, '0');
+                new_path.append(val);
                 break;
             case 'o':
                 // TODO get original artist tag
@@ -277,7 +281,10 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
         }
     }
 
-    return ctx.base_dir / fs::path{new_path}.replace_extension(file.extension());
+    auto final_path = ctx.base_dir;
+    final_path /= new_path;
+    final_path += file.extension();
+    return final_path;
 }
 
 move_results move_file(const fs::path &file, const context &ctx)
@@ -318,9 +325,23 @@ move_results move_file(const fs::path &file, const context &ctx)
     
     // TODO - convert weird characters in filenames
 
-    // TODO - see if the new path is actually any different
+    // See if the new path is actually any different
+    if (new_file == file)
+    {
+        // No change in the file's path.
+        if (ctx.verbose)
+            cout << "No change in path for " << file << endl;
+        return results;
+    }
 
-    // TODO - check to see if new path already exists
+    // Check to see if new path already exists
+    if (fs::exists(new_file))
+    {
+        // TODO - Clash with destination path.  Try to make it unique?
+        cout << "Warning: want to move " << file << " to " << new_file
+             << ", but that path already exists!  Skipping for now.." << endl;
+        return results;
+    }
     
     if (ctx.simulate)
     {
