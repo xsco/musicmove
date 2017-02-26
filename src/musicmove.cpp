@@ -121,6 +121,9 @@ int main(int argc, char *argv[])
     ctx.very_verbose = vm["very-verbose"].as<bool>();
     if (ctx.very_verbose)
         ctx.verbose = true;
+    // TODO - add as command-line switches
+    ctx.path_uniqueness = mm::path_uniqueness_t::skip;
+    ctx.path_conversion = mm::path_conversion_t::windows_ascii;
 
     // Process specified paths
     const vector<string> &paths = vm["path"].as<vector<string>>();

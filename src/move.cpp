@@ -18,10 +18,12 @@
 #include "move.hpp"
 
 #include <boost/filesystem.hpp>
+#include <boost/locale.hpp>
 #include <fileref.h>
 #include <tpropertymap.h>
 
 #include <algorithm>
+#include <regex>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -73,9 +75,10 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         // Is the directory now empty?
         if (file_count == 0)
         {
-            if (ctx.simulate)
-                cout << "Would remove empty directory " << p << endl;
-            else
+            if (ctx.simulate || ctx.verbose)
+                cout << "Remove empty directory " << p << endl;
+            
+            if (!ctx.simulate)
             {
                 // Safety check to make sure the dir is definitely empty
                 if (fs::directory_iterator{p} != fs::directory_iterator{})
@@ -148,6 +151,40 @@ static void print_file_and_tags(std::ostream &os, const fs::path &file,
     }
 }
 
+static string convert_for_filesystem(const string &str, const context &ctx)
+{
+    // Make the string suitable for writing as a path to the filesystem
+    // Assume it is in UTF-8.
+    
+    // First, convert to 8-bit Latin1
+    string safe = boost::locale::conv::from_utf(str, "Latin1");
+    
+    // Remove marked characters using a small lookup table
+    const char *
+        //   "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
+        tr = "AAAAAAECEEEEIIIIDNOOOOOx0UUUUYPsaaaaaaeceeeeiiiiOnooooo/0uuuuypy";
+    std::transform(safe.begin(), safe.end(), safe.begin(),
+        [&tr](char &sc) {
+            unsigned char &c = reinterpret_cast<unsigned char &>(sc);
+            return c >= 192 ? tr[c - 192] : sc;
+        });
+    
+    // Remove any non-portable characters
+    if (ctx.path_conversion == path_conversion_t::posix)
+    {
+        std::regex posix_exp{"[^A-Za-z0-9\\.-_]"};
+        return std::regex_replace(safe, posix_exp, "_");
+    }
+    else if (ctx.path_conversion == path_conversion_t::windows_ascii)
+    {
+        std::regex windows_exp{"[<>:\"/\\|]"};
+        return std::regex_replace(safe, windows_exp, "_");
+    }
+    else
+        throw std::out_of_range("ASSERT: unknown value of path_conversion_t"
+            " not handled!");
+}
+
 static string get_property_safe(const TagLib::Tag &tag, const char *name,
                                 unsigned int prop_offset = 0)
 {
@@ -163,10 +200,8 @@ static string get_property_safe(const TagLib::Tag &tag, const char *name,
     return val.to8Bit(true);
 }
 
-static fs::path format_path_easytag(const fs::path &file, const string &format,
-                            const TagLib::Tag &tag, const context &ctx)
+static string get_token_easytag(const TagLib::Tag &tag, const char c)
 {
-    // Replace tokens in a format string.  Expect EasyTag-style expressions
     // %a - Track artist
     // %b - Album
     // %c - Comment
@@ -183,12 +218,74 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
     // %x - Number of discs
     // %y - Year
     // %z - Album artist
+    string val;
+    stringstream err_msg;
+    switch (c)
+    {
+        case 'a':
+            return get_property_safe(tag, "ARTIST");
+        case 'b':
+            return get_property_safe(tag, "ALBUM");
+        case 'c':
+            return get_property_safe(tag, "COMMENT");
+        case 'd':
+            return get_property_safe(tag, "DISCNUMBER");
+        case 'e':
+            return get_property_safe(tag, "ENCODEDBY");
+        case 'g':
+            return get_property_safe(tag, "GENRE");
+        case 'l':
+            // TODO get number of tracks from either dedicated tag or TRACKNUMBER
+            //new_path.append(get_property_safe(tag, "")); // Number of tracks?
+            return "";
+        case 'n':
+            // Pad with zero if the number is only one character long
+            val = get_property_safe(tag, "TRACKNUMBER");
+            if (val.length() == 1)
+                val.insert(0, 1, '0');
+            return val;
+        case 'o':
+            // TODO get original artist tag
+            return "";
+        case 'p':
+            return get_property_safe(tag, "COMPOSER");
+        case 'r':
+            return get_property_safe(tag, "COPYRIGHT");
+        case 't':
+            return get_property_safe(tag, "TITLE");
+        case 'u':
+            // TODO get URL tag
+            return "";
+        case 'x':
+            // TODO get number of discs tag from somewhere
+            return "";
+        case 'y':
+            return get_property_safe(tag, "DATE");
+        case 'z':
+            // Fall back to artist if 'albumartist' is not present
+            val = get_property_safe(tag, "ALBUMARTIST");
+            return val.empty()
+                ? get_property_safe(tag, "ARTIST")
+                : val;
+        case '%':
+            // It's an actual percentage sign in the filename!
+            return "%";
+        default:
+            err_msg << "Unknown format specifier `%" << c << "'";
+            throw std::out_of_range(err_msg.str().c_str());
+    }
+}
+
+static fs::path format_path_easytag(const fs::path &file, const string &format,
+                            const TagLib::Tag &tag, const context &ctx)
+{
+    // Replace tokens in a format string.  Expect EasyTag-style expressions
+    // where each token is a '%' symbol followed by a single letter
 
     auto props = tag.properties();
     string new_path;
     string::size_type len = format.length();
     string::size_type last_start = 0;
-    stringstream err_msg;
     new_path.reserve(format.length());
     for (auto found = format.find_first_of('%');
          found != string::npos;
@@ -202,83 +299,13 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
         ++found;
         if (found == len)
         {
-            err_msg << "Unmatched `%' sign at end of format string";
-            throw std::invalid_argument(err_msg.str().c_str());
+            throw std::invalid_argument(
+                "Unmatched `%' sign at end of format string");
         }
     
         auto c = format[found];
-        string val;
-        switch (c)
-        {
-            case 'a':
-                new_path.append(get_property_safe(tag, "ARTIST"));
-                break;
-            case 'b':
-                new_path.append(get_property_safe(tag, "ALBUM"));
-                break;
-            case 'c':
-                new_path.append(get_property_safe(tag, "COMMENT"));
-                break;
-            case 'd':
-                new_path.append(get_property_safe(tag, "DISCNUMBER"));
-                break;
-            case 'e':
-                new_path.append(get_property_safe(tag, "ENCODEDBY"));
-                break;
-            case 'g':
-                new_path.append(get_property_safe(tag, "GENRE"));
-                break;
-            case 'l':
-                // TODO get number of tracks from either dedicated tag or TRACKNUMBER
-                //new_path.append(get_property_safe(tag, "")); // Number of tracks?
-                break;
-            case 'n':
-                // Pad with zero if the number is only one character long
-                val = get_property_safe(tag, "TRACKNUMBER");
-                if (val.length() == 1)
-                    val.insert(0, 1, '0');
-                new_path.append(val);
-                break;
-            case 'o':
-                // TODO get original artist tag
-                //new_path.append(get_property_safe(tag, "")); // Original artist?
-                break;
-            case 'p':
-                new_path.append(get_property_safe(tag, "COMPOSER"));
-                break;
-            case 'r':
-                new_path.append(get_property_safe(tag, "COPYRIGHT"));
-                break;
-            case 't':
-                new_path.append(get_property_safe(tag, "TITLE"));
-                break;
-            case 'u':
-                // TODO get URL tag
-                //new_path.append(get_property_safe(tag, "")); // URL?
-                break;
-            case 'x':
-                // TODO get number of discs tag from somewhere
-                //new_path.append(get_property_safe(tag, "")); // Number of discs?
-                break;
-            case 'y':
-                new_path.append(get_property_safe(tag, "DATE"));
-                break;
-            case 'z':
-                // Fall back to artist if 'albumartist' is not present
-                val = get_property_safe(tag, "ALBUMARTIST");
-                new_path.append(val.empty()
-                    ? get_property_safe(tag, "ARTIST")
-                    : val);
-                break;
-            case '%':
-                // It's an actual percentage sign in the filename!
-                new_path.append("%");
-                break;
-            default:
-                err_msg << "Unknown format specifier `%" << c << "'";
-                throw std::out_of_range(err_msg.str().c_str());
-                break;
-        }
+        // Decode the token and append to the path
+        new_path.append(convert_for_filesystem(get_token_easytag(tag, c), ctx));
     }
 
     auto final_path = ctx.base_dir;
@@ -320,11 +347,6 @@ move_results move_file(const fs::path &file, const context &ctx)
     
     auto new_file = format_path_easytag(file, ctx.format, tag, ctx);
     
-    // TODO - check filename and directory name validity, according to Boost:
-    // www.boost.org/doc/libs/1_58_0/libs/filesystem/doc/portability_guide.htm
-    
-    // TODO - convert weird characters in filenames
-
     // See if the new path is actually any different
     if (new_file == file)
     {
@@ -337,30 +359,46 @@ move_results move_file(const fs::path &file, const context &ctx)
     // Check to see if new path already exists
     if (fs::exists(new_file))
     {
-        // TODO - Clash with destination path.  Try to make it unique?
-        cout << "Warning: want to move " << file << " to " << new_file
-             << ", but that path already exists!  Skipping for now.." << endl;
-        return results;
+        // Clash with destination path.
+        if (ctx.path_uniqueness == path_uniqueness_t::skip)
+        {
+            cout << "Warning: want to move " << file << " to " << new_file
+                 << ", but that path already exists.  Skipping for now.."
+                 << endl;
+            return results;
+        }
+        else if (ctx.path_uniqueness == path_uniqueness_t::exit)
+        {
+            stringstream msg;
+            msg << "Tried to move " << file << " to " << new_file
+                 << ", but that path already exists";
+            throw std::runtime_error(msg.str().c_str());
+        }
+        else
+            throw std::out_of_range("ASSERT: Unknown value of "
+                "path_uniqueness_t not handled!");
     }
     
-    if (ctx.simulate)
-    {
-        cout << "Would rename.." << endl;
-        cout << "- from :" << file << endl;
-        cout << "- to   :" << new_file << endl;
-    }
-    else
-    {
-        if (ctx.verbose)
-            cout << "Renaming from " << file << " to " << new_file << endl;
-        // TODO - actually rename the file
-    }
-
     if (file.parent_path() != new_file.parent_path())
         results.dir_changed = true;
     if (file.filename() != new_file.filename())
         results.filename_changed = true;
     
+    if (ctx.simulate || ctx.verbose)
+    {
+        if (results.dir_changed && results.filename_changed)
+            cout << "Move/rename " << file << " to " << new_file << endl;
+        else if (results.dir_changed)
+            cout << "Move " << file << " to " << new_file.parent_path() << endl;
+        else
+            cout << "Rename " << file << " to " << new_file.filename() << endl;
+    }
+    
+    if (!ctx.simulate)
+    {
+        fs::rename(file, new_file);
+    }
+
     return results;
 }
 

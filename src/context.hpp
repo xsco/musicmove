@@ -25,6 +25,10 @@ namespace fs = boost::filesystem;
 
 namespace mm {
 
+enum class path_uniqueness_t { skip, exit };
+
+enum class path_conversion_t { posix, windows_ascii };
+
 struct context
 {
     std::string format;
@@ -32,6 +36,8 @@ struct context
     bool simulate;
     bool verbose;
     bool very_verbose;
+    path_uniqueness_t path_uniqueness;
+    path_conversion_t path_conversion;
 };
 
 } // namespace mm
