@@ -1,4 +1,4 @@
-AC_INIT([musicmove bulk renamer], [0.0.1], [bugs@xsco.org], [musicmove])
+AC_INIT([musicmove bulk renamer for music files], [0.0.1], [bugs@xsco.org], [musicmove])
 #AM_SILENT_RULES([yes])
 AM_INIT_AUTOMAKE([-Wall])
 

@@ -219,6 +219,7 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
     // %y - Year
     // %z - Album artist
     string val;
+    string::size_type i;
     stringstream err_msg;
     switch (c)
     {
@@ -235,9 +236,14 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
         case 'g':
             return get_property_safe(tag, "GENRE");
         case 'l':
-            // TODO get number of tracks from either dedicated tag or TRACKNUMBER
-            //new_path.append(get_property_safe(tag, "")); // Number of tracks?
-            return "";
+            // Get total tracks from either TRACKTOTAL tag or TRACKNUMBER
+            val = get_property_safe(tag, "TRACKTOTAL");
+            if (val != "")
+                return val;
+            val = get_property_safe(tag, "TRACKNUMBER");
+            // Look for / and get bit afterwards
+            i = val.find('/');
+            return i == string::npos ? "" : val.substr(i + 1);
         case 'n':
             // Pad with zero if the number is only one character long
             val = get_property_safe(tag, "TRACKNUMBER");
@@ -245,8 +251,9 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
                 val.insert(0, 1, '0');
             return val;
         case 'o':
-            // TODO get original artist tag
-            return "";
+            // Original artist tag
+            return get_property_safe(tag, "PERFORMER");
+            //throw std::out_of_range("The %o token for Original Artist is not currently supported");
         case 'p':
             return get_property_safe(tag, "COMPOSER");
         case 'r':
@@ -254,11 +261,18 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
         case 't':
             return get_property_safe(tag, "TITLE");
         case 'u':
-            // TODO get URL tag
-            return "";
+            // URL tag
+            return get_property_safe(tag, "CONTACT");
+            //throw std::out_of_range("The %u token for URL is not currently supported");
         case 'x':
-            // TODO get number of discs tag from somewhere
-            return "";
+            // Get number of discs tag from DISCTOTAL or DISCNUMBER
+            val = get_property_safe(tag, "DISCTOTAL");
+            if (val != "")
+                return val;
+            val = get_property_safe(tag, "DISCNUMBER");
+            // Look for / and get bit afterwards
+            i = val.find('/');
+            return i == string::npos ? "" : val.substr(i + 1);
         case 'y':
             return get_property_safe(tag, "DATE");
         case 'z':
@@ -283,17 +297,17 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
     // where each token is a '%' symbol followed by a single letter
 
     auto props = tag.properties();
-    string new_path;
+    string new_path_str;
     string::size_type len = format.length();
     string::size_type last_start = 0;
-    new_path.reserve(format.length());
+    new_path_str.reserve(format.length());
     for (auto found = format.find_first_of('%');
          found != string::npos;
          last_start = found + 1, found = format.find_first_of('%', found + 1))
     {
         // Copy anything found so far to the new path
         if (found > 0 && found > last_start)
-            new_path.append(format, last_start, found - last_start);
+            new_path_str.append(format, last_start, found - last_start);
         
         // Ensure no unfinished tokens at end of string
         ++found;
@@ -305,13 +319,32 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
     
         auto c = format[found];
         // Decode the token and append to the path
-        new_path.append(convert_for_filesystem(get_token_easytag(tag, c), ctx));
+        new_path_str.append(
+            convert_for_filesystem(get_token_easytag(tag, c), ctx));
     }
-
-    auto final_path = ctx.base_dir;
-    final_path /= new_path;
-    final_path += file.extension();
-    return final_path;
+    
+    // Work out the full path for the renamed file.
+    // If the format does not specify a directory, it remains in the same
+    // dir; if the format specifies a relative path, it is relative to the
+    // file's current directory (apart from dot and dot-dot); if the format
+    // specifies an absolute path, then it is used as-is.
+    fs::path new_path{new_path_str};
+    if (new_path.is_relative())
+    {
+        // Do we have a relative dir specifier like dot or dot-dot?
+        // If so, convert to absolute based on the current working directory.
+        if (new_path.has_parent_path() &&
+            !new_path_str.empty() && new_path_str[0] == '.')
+            // Path actually starts from CWD like an absolute path
+            new_path = fs::current_path() / new_path;
+        else
+            // Path is relative.  This means relative to its current directory
+            new_path = file.parent_path() / new_path;
+    }
+    
+    // Add file extension
+    new_path += file.extension();
+    return new_path;
 }
 
 move_results move_file(const fs::path &file, const context &ctx)
@@ -396,6 +429,7 @@ move_results move_file(const fs::path &file, const context &ctx)
     
     if (!ctx.simulate)
     {
+        // TODO ensure parent directory path exists before renaming
         fs::rename(file, new_file);
     }
 

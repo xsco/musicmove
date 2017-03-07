@@ -32,7 +32,6 @@ enum class path_conversion_t { posix, windows_ascii };
 struct context
 {
     std::string format;
-    fs::path base_dir;
     bool simulate;
     bool verbose;
     bool very_verbose;
