@@ -15,29 +15,43 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MUSICMOVE_CONTEXT_HPP
-#define MUSICMOVE_CONTEXT_HPP
+#ifndef MUSICMOVE_METADATA_HPP
+#define MUSICMOVE_METADATA_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 #include <string>
-
-namespace fs = boost::filesystem;
+#include <memory>
 
 namespace mm {
 
-enum class path_uniqueness_t { skip, exit };
-
-enum class path_conversion_t { posix, windows_ascii };
-
-struct context
+class metadata
 {
-    std::string format;
-    bool simulate;
-    bool verbose;
-    path_uniqueness_t path_uniqueness;
-    path_conversion_t path_conversion;
+public:
+    metadata(const boost::filesystem::path &path);
+    ~metadata();
+    
+    bool has_tag() const;
+    
+    std::string album() const;
+    std::string artist() const;
+    std::string comment() const;
+    std::string date() const;
+    std::string genre() const;
+    std::string title() const;
+    std::string track_number() const;
+
+private:
+    class impl;
+    class basic_impl;
+    class mpeg_impl;
+    class flac_impl;
+    class ogg_impl;
+    class mp4_impl;
+    static std::unique_ptr<impl> make_impl(const boost::filesystem::path &path);
+    
+    std::unique_ptr<impl> impl_;
 };
 
 } // namespace mm
 
-#endif // MUSICMOVE_CONTEXT_HPP
+#endif // MUSICMOVE_METADATA_HPP

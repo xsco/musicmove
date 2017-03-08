@@ -87,32 +87,30 @@ int main(int argc, char *argv[])
     po::options_description od_visible("Allowed options");
     od_visible.add_options()
         ("format", po::value<string>(),
-            "file path format string")
+            "The file path format string.")
         ("simulate,s", po::bool_switch(),
-            "simulate renaming, i.e. don't commit any changes to disk. "
+            "Simulate renaming, i.e. don't commit any changes to disk. "
             "This is the default.")
         ("for-real,f", po::bool_switch(),
             "Rename files for real; " PACKAGE " is safe by default, so you "
             "will need to use this switch to explicitly tell the program that "
-            "you actually want it to rename files")
+            "you actually want it to rename files.")
         ("path-conversion", po::value<string>(),
-            "approach for converting meta-data characters into paths.\n"
+            "Approach for converting meta-data characters into paths.\n"
             "`windows-ascii' (the default approach) converts to 7-bit ASCII "
             "and removes any characters not normally permitted on Microsoft "
             "Windows machines.\n"
             "`posix' is a restrictive approach that permits only unaccented "
             "letters (of either case), numbers, dot, underscore, and hyphen.")
         ("exit-on-duplicate", po::bool_switch(),
-            "exit if we encounter two files that would be rewritten to the "
-            "same path on disk (default is to skip any such duplicates)")
+            "Exit if we encounter two files that would be rewritten to the "
+            "same path on disk (default is to skip any such duplicates).")
         ("verbose,v", po::bool_switch(),
-            "print additional messages about what's going on")
-        ("very-verbose", po::bool_switch(),
-            "print even more messages about what's going on")
+            "Print additional messages about what's going on.")
         ("version", po::bool_switch(),
-            "display version and exit")
+            "Display the version number and exit.")
         ("help,h", po::bool_switch(),
-            "display this help screen")
+            "Display this help screen.")
         ;
 
     // Options that are not shown in a help screen
@@ -180,11 +178,7 @@ int main(int argc, char *argv[])
     mm::context ctx;
     ctx.format = vm["format"].as<string>();
     ctx.simulate = !vm["for-real"].as<bool>();
-    ctx.verbose = ctx.very_verbose = false;
     ctx.verbose = vm["verbose"].as<bool>();
-    ctx.very_verbose = vm["very-verbose"].as<bool>();
-    if (ctx.very_verbose)
-        ctx.verbose = true;
     ctx.path_uniqueness = vm.count("exit-on-duplicate") <= 0
         ? mm::path_uniqueness_t::skip
         : mm::path_uniqueness_t::exit;

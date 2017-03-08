@@ -19,8 +19,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
-#include <fileref.h>
-#include <tpropertymap.h>
 
 #include <algorithm>
 #include <regex>
@@ -29,6 +27,9 @@
 #include <stdexcept>
 
 #include <config.h>
+
+#include "metadata.hpp"
+
 
 namespace fs = boost::filesystem;
 
@@ -109,48 +110,6 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
     return results;
 };
 
-static void print_file_and_tags(std::ostream &os, const fs::path &file,
-                                const TagLib::Tag &tag, const context &ctx)
-{
-    os << "Considering file " << file << endl;
-    
-    auto props = tag.properties();
-    if (props.isEmpty())
-    {
-        os << "  (No tags)" << endl;
-    }
-    else
-    {
-        for (auto i = props.begin(); i != props.end(); ++i)
-        {
-            auto field_name = i->first;
-            auto values = i->second;
-            stringstream ss;
-            if (values.isEmpty())
-            {
-                ss << "(empty)";
-            }
-            else
-            {
-                bool first = true;
-                for (auto value : values)
-                {
-                    if (first)
-                    {
-                        first = false;
-                    }
-                    else
-                    {
-                        ss << ", ";
-                    }
-                    ss << "\"" << value << "\"";
-                }
-            }
-            os << " " << field_name << ": " << ss.str() << endl;
-        }
-    }
-}
-
 static string convert_for_filesystem(const string &str, const context &ctx)
 {
     // Make the string suitable for writing as a path to the filesystem
@@ -185,22 +144,8 @@ static string convert_for_filesystem(const string &str, const context &ctx)
             " not handled!");
 }
 
-static string get_property_safe(const TagLib::Tag &tag, const char *name,
-                                unsigned int prop_offset = 0)
-{
-    auto vals = tag.properties()[name];
-    if (vals.isEmpty())
-        return "";
-    // For multiple tag values, select the desired offset
-    if (prop_offset >= vals.size())
-        // Offset not available.  Get the first instead
-        prop_offset = 0;
-    auto val = vals[prop_offset];
-    // Get UTF-8 encoding of the property value
-    return val.to8Bit(true);
-}
-
-static string get_token_easytag(const TagLib::Tag &tag, const char c)
+// TODO - move EasyTag-specific code into separate file
+static string get_token_easytag(const metadata &tag, const char c)
 {
     // %a - Track artist
     // %b - Album
@@ -224,48 +169,57 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
     switch (c)
     {
         case 'a':
-            return get_property_safe(tag, "ARTIST");
+            return tag.artist();
         case 'b':
-            return get_property_safe(tag, "ALBUM");
+            return tag.album();
         case 'c':
-            return get_property_safe(tag, "COMMENT");
+            return tag.comment();
         case 'd':
-            return get_property_safe(tag, "DISCNUMBER");
+            // Disc number
+            // TODO - format-specific extraction 
+            return "";
         case 'e':
-            return get_property_safe(tag, "ENCODEDBY");
+            // Encoded by
+            // TODO - format-specific extraction required
+            return "";
         case 'g':
-            return get_property_safe(tag, "GENRE");
+            return tag.genre();
         case 'l':
             // Get total tracks from either TRACKTOTAL tag or TRACKNUMBER
-            val = get_property_safe(tag, "TRACKTOTAL");
-            if (val != "")
-                return val;
-            val = get_property_safe(tag, "TRACKNUMBER");
+            // TODO - format-specific extraction required
+            val = tag.track_number();
             // Look for / and get bit afterwards
             i = val.find('/');
             return i == string::npos ? "" : val.substr(i + 1);
         case 'n':
             // Pad with zero if the number is only one character long
-            val = get_property_safe(tag, "TRACKNUMBER");
+            val = tag.track_number();
             if (val.length() == 1)
                 val.insert(0, 1, '0');
             return val;
         case 'o':
             // Original artist tag
-            return get_property_safe(tag, "PERFORMER");
-            //throw std::out_of_range("The %o token for Original Artist is not currently supported");
+            // TODO - format-specific extraction required
+            return "";
         case 'p':
-            return get_property_safe(tag, "COMPOSER");
+            // Composer
+            // TODO - format-specific extraction required
+            return "";
         case 'r':
-            return get_property_safe(tag, "COPYRIGHT");
+            // Copyright
+            // TODO - format-specific extraction required
+            return "";
         case 't':
-            return get_property_safe(tag, "TITLE");
+            return tag.title();
         case 'u':
             // URL tag
-            return get_property_safe(tag, "CONTACT");
-            //throw std::out_of_range("The %u token for URL is not currently supported");
+            // TODO - format-specific extraction required
+            return "";
         case 'x':
             // Get number of discs tag from DISCTOTAL or DISCNUMBER
+            // TODO - format-specific extraction required
+            return "";
+            /*
             val = get_property_safe(tag, "DISCTOTAL");
             if (val != "")
                 return val;
@@ -273,14 +227,13 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
             // Look for / and get bit afterwards
             i = val.find('/');
             return i == string::npos ? "" : val.substr(i + 1);
+            */
         case 'y':
-            return get_property_safe(tag, "DATE");
+            return tag.date();
         case 'z':
-            // Fall back to artist if 'albumartist' is not present
-            val = get_property_safe(tag, "ALBUMARTIST");
-            return val.empty()
-                ? get_property_safe(tag, "ARTIST")
-                : val;
+            // Album artist
+            // TODO - format-specific extraction required
+            return tag.artist();
         case '%':
             // It's an actual percentage sign in the filename!
             return "%";
@@ -291,12 +244,11 @@ static string get_token_easytag(const TagLib::Tag &tag, const char c)
 }
 
 static fs::path format_path_easytag(const fs::path &file, const string &format,
-                            const TagLib::Tag &tag, const context &ctx)
+                            const metadata &tag, const context &ctx)
 {
     // Replace tokens in a format string.  Expect EasyTag-style expressions
     // where each token is a '%' symbol followed by a single letter
 
-    auto props = tag.properties();
     string new_path_str;
     string::size_type len = format.length();
     string::size_type last_start = 0;
@@ -349,34 +301,19 @@ static fs::path format_path_easytag(const fs::path &file, const string &format,
 
 move_results move_file(const fs::path &file, const context &ctx)
 {
-    TagLib::FileRef f{file.c_str()};
     move_results results;
     results.filename_changed = false;
     results.dir_changed = false;
-    
-    // Does this file have any audio properties?
-    if (f.audioProperties() == nullptr)
-    {
-        if (ctx.very_verbose)
-        {
-            cerr << "No audio properties found for file "
-                 << file << ".. skipping" << endl;
-        }
-        return results;
-    }
+
+    metadata tag{file};
     
     // Does this file have a tag?
-    auto *tag_ptr = f.tag();
-    if (tag_ptr == nullptr)
+    if (!tag.has_tag())
     {
         if (ctx.verbose)
             cerr << "No tag found for file " << file << ".. skipping" << endl;
         return results;
     }
-    auto &tag = *tag_ptr;
-    
-    if (ctx.very_verbose)
-        print_file_and_tags(cout, file, tag, ctx);
     
     auto new_file = format_path_easytag(file, ctx.format, tag, ctx);
     

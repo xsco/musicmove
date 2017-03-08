@@ -4,6 +4,7 @@ bin_PROGRAMS = musicmove
 musicmove_SOURCES = \
 	musicmove.cpp \
 	context.hpp \
+	metadata.cpp metadata.hpp \
 	move.cpp move.hpp
 
 # Compiler flags.
