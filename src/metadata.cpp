@@ -18,6 +18,7 @@
 #include "metadata.hpp"
 
 #include <fileref.h>
+#include <flacfile.h>
 #include <tpropertymap.h>
 #include <boost/filesystem.hpp>
 #include <memory>
@@ -33,6 +34,8 @@ using std::string;
 using std::unique_ptr;
 using std::stringstream;
 using std::out_of_range;
+using std::cout;
+using std::endl;
 
 class metadata::impl
 {
@@ -85,15 +88,58 @@ private:
     const TagLib::Tag *tag_;
 };
 
+class metadata::flac_impl : public metadata::impl
+{
+public:
+    flac_impl(const fs::path &path) :
+        file_{path.c_str()}
+    {
+        /*
+        for (auto &kvp : file_.properties())
+        {
+            for (auto &val : kvp.second)
+            {
+                cout << kvp.first << " -> " << val << endl;
+            }
+        }
+        */
+    }
+    ~flac_impl() {}
+    
+    virtual bool has_tag() const { return file_.hasXiphComment() ||
+                                          file_.hasID3v2Tag() ||
+                                          file_.hasID3v1Tag(); }
+    virtual string album() const { return get_prop("ALBUM"); }
+    virtual string artist() const { return get_prop("ARTIST"); }
+    virtual string comment() const { return get_prop("COMMENT"); }
+    virtual string date() const { return get_prop("DATE"); }
+    virtual string genre() const { return get_prop("GENRE"); }
+    virtual string title() const { return get_prop("TITLE"); }
+    virtual string track_number() const { return get_prop("TRACKNUMBER"); }
+
+private:
+    string get_prop(const char *name) const
+    {
+        auto vals = file_.properties()[name];
+        if (vals.isEmpty())
+            return "";
+        auto val = vals[0];
+        // Get UTF-8 encoding of the property value
+        return val.to8Bit(true);
+    }
+
+    TagLib::FLAC::File file_;
+};
+
 
 unique_ptr<metadata::impl> metadata::make_impl(const fs::path &path)
 {
-    // TODO - select metadata impl based on file extension (case sensitivity?)
-    /*
+    // Select metadata impl based on file extension
     auto ext = path.extension();
     if (ext == ".flac")
-        return unique_ptr<metadata::impl>{new flac_impl};
-    */
+        return unique_ptr<metadata::impl>{new flac_impl{path}};
+
+    // TODO - other filetype metadata implementations
     
     return unique_ptr<metadata::impl>{new basic_impl{path}};
     /*
@@ -113,13 +159,22 @@ metadata::metadata(const fs::path &path) :
 metadata::~metadata()
 {}
 
-bool   metadata::has_tag()      const { return impl_->has_tag(); }
-string metadata::album()        const { return impl_->album(); }
-string metadata::artist()       const { return impl_->artist(); }
-string metadata::comment()      const { return impl_->comment(); }
-string metadata::date()         const { return impl_->date(); }
-string metadata::genre()        const { return impl_->genre(); }
-string metadata::title()        const { return impl_->title(); }
-string metadata::track_number() const { return impl_->track_number(); }
+bool   metadata::has_tag()         const { return impl_->has_tag(); }
+string metadata::album()           const { return impl_->album(); }
+string metadata::album_artist()    const { return ""; /* TODO - add album artist */ }
+string metadata::artist()          const { return impl_->artist(); }
+string metadata::comment()         const { return impl_->comment(); }
+string metadata::composer()        const { return ""; /* TODO - add composer */ }
+string metadata::copyright()       const { return ""; /* TODO - add copyright */ }
+string metadata::encoded_by()      const { return ""; /* TODO - add encoded by */ }
+string metadata::date()            const { return impl_->date(); }
+string metadata::disc_number()     const { return ""; /* TODO - add disc number */ }
+string metadata::disc_total()      const { return ""; /* TODO - add disc total */ }
+string metadata::genre()           const { return impl_->genre(); }
+string metadata::original_artist() const { return ""; /* TODO - add original artist */ }
+string metadata::title()           const { return impl_->title(); }
+string metadata::track_number()    const { return impl_->track_number(); }
+string metadata::track_total()     const { return ""; /* TODO - add track total */ }
+string metadata::url()             const { return ""; /* TODO - add URL */ }
 
 } // namespace mm

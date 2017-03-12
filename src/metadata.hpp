@@ -33,12 +33,21 @@ public:
     bool has_tag() const;
     
     std::string album() const;
+    std::string album_artist() const;
     std::string artist() const;
     std::string comment() const;
+    std::string composer() const;
+    std::string copyright() const;
     std::string date() const;
+    std::string disc_number() const;
+    std::string disc_total() const;
+    std::string encoded_by() const;
     std::string genre() const;
+    std::string original_artist() const;
     std::string title() const;
     std::string track_number() const;
+    std::string track_total() const;
+    std::string url() const;
 
 private:
     class impl;

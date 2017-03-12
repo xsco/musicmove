@@ -76,6 +76,9 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         // Is the directory now empty?
         if (file_count == 0)
         {
+            // TODO - file count might go to zero if all files are moved to
+            // a sub-directory of this one
+            
             if (ctx.simulate || ctx.verbose)
                 cout << "Remove empty directory " << p << endl;
             
@@ -166,6 +169,7 @@ static string get_token_easytag(const metadata &tag, const char c)
     string val;
     string::size_type i;
     stringstream err_msg;
+    // TODO - move tag "fallback" logic to metadata class
     switch (c)
     {
         case 'a':
@@ -176,17 +180,17 @@ static string get_token_easytag(const metadata &tag, const char c)
             return tag.comment();
         case 'd':
             // Disc number
-            // TODO - format-specific extraction 
-            return "";
+            return tag.disc_number();
         case 'e':
             // Encoded by
-            // TODO - format-specific extraction required
-            return "";
+            return tag.encoded_by();
         case 'g':
             return tag.genre();
         case 'l':
             // Get total tracks from either TRACKTOTAL tag or TRACKNUMBER
-            // TODO - format-specific extraction required
+            val = tag.track_total();
+            if (val != "")
+                return val;
             val = tag.track_number();
             // Look for / and get bit afterwards
             i = val.find('/');
@@ -199,41 +203,32 @@ static string get_token_easytag(const metadata &tag, const char c)
             return val;
         case 'o':
             // Original artist tag
-            // TODO - format-specific extraction required
-            return "";
+            return tag.original_artist();
         case 'p':
             // Composer
-            // TODO - format-specific extraction required
-            return "";
+            return tag.composer();
         case 'r':
             // Copyright
-            // TODO - format-specific extraction required
-            return "";
+            return tag.copyright();
         case 't':
             return tag.title();
         case 'u':
             // URL tag
-            // TODO - format-specific extraction required
-            return "";
+            return tag.url();
         case 'x':
             // Get number of discs tag from DISCTOTAL or DISCNUMBER
-            // TODO - format-specific extraction required
-            return "";
-            /*
-            val = get_property_safe(tag, "DISCTOTAL");
+            val = tag.disc_total();
             if (val != "")
                 return val;
-            val = get_property_safe(tag, "DISCNUMBER");
+            val = tag.disc_number();
             // Look for / and get bit afterwards
             i = val.find('/');
             return i == string::npos ? "" : val.substr(i + 1);
-            */
         case 'y':
             return tag.date();
         case 'z':
             // Album artist
-            // TODO - format-specific extraction required
-            return tag.artist();
+            return tag.album_artist();
         case '%':
             // It's an actual percentage sign in the filename!
             return "%";
