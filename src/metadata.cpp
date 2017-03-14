@@ -132,6 +132,9 @@ private:
 };
 
 
+// TODO - is the inheritance hierarchy needed?  Why not just use TagLib::File::properties()?
+// And maybe get rid of has_tag().
+
 unique_ptr<metadata::impl> metadata::make_impl(const fs::path &path)
 {
     // Select metadata impl based on file extension
