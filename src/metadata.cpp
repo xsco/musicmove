@@ -41,6 +41,7 @@ using std::cout;
 using std::endl;
 
 // FLAC implementation
+// TODO - create header (all inline?) and move flac_impl to separate file
 class metadata::flac_impl : public metadata::base_impl
 {
 public:
@@ -86,6 +87,7 @@ private:
 };
 
 // MP4 implementation
+// TODO - create header (all inline?) and move flac_impl to separate file
 class metadata::mp4_impl : public metadata::base_impl
 {
 public:
