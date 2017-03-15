@@ -8,7 +8,7 @@ TESTS = $(check_PROGRAMS)
 musicmove_SOURCES = \
 	musicmove.cpp \
 	context.hpp \
-	metadata.cpp metadata.hpp \
+	metadata.cpp metadata.hpp metadata_impl.hpp\
 	move.cpp move.hpp
 
 # Compiler flags.
@@ -27,7 +27,8 @@ musicmove_LDADD = \
 # Metadata test
 metadata_test_SOURCES = metadata.cpp metadata.hpp metadata_test.cpp
 metadata_test_CPPFLAGS = \
-	$(musicmove_CPPFLAGS)
+	$(musicmove_CPPFLAGS) \
+	-DTESTDATA_DIR="../testdata"
 metadata_test_LDADD = \
 	$(musicmove_LDADD) \
 	$(BOOST_UTF_LDADD)

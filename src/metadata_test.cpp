@@ -20,10 +20,67 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE metadata_test
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem/path.hpp>
+#include <iostream>
+#include <string>
 
-BOOST_AUTO_TEST_CASE (example_test)
+#define STRINGIFY(x) STRINGIFY_(x)
+#define STRINGIFY_(x) #x
+
+namespace fs = boost::filesystem;
+using namespace std;
+
+const string file_formats_dir_str = STRINGIFY(TESTDATA_DIR) "/file_formats";
+
+BOOST_AUTO_TEST_CASE (blank_metadata)
 {
-    int i = 5;
-    BOOST_CHECK_EQUAL(i, 5);
+    // TODO - test files with no metadata, making sure we get empty strings
 }
 
+BOOST_AUTO_TEST_CASE (easytag_metadata)
+{
+    fs::path flac_path{file_formats_dir_str + "/01-chirp.easytag.flac"};
+    fs::path mp4_path {file_formats_dir_str + "/02-chirp.easytag.m4a"};
+
+    cout << "Testing " << flac_path << endl;
+    BOOST_CHECK(fs::exists(flac_path));
+    
+    mm::metadata tag_flac{flac_path};
+    BOOST_CHECK_EQUAL(tag_flac.album(),           "Album field");
+    BOOST_CHECK_EQUAL(tag_flac.album_artist(),    "Album artist field");
+    BOOST_CHECK_EQUAL(tag_flac.artist(),          "Artist field");
+    BOOST_CHECK_EQUAL(tag_flac.comment(),         "Comment field");
+    BOOST_CHECK_EQUAL(tag_flac.composer(),        "Composer field");
+    BOOST_CHECK_EQUAL(tag_flac.copyright(),       "Copyright field");
+    BOOST_CHECK_EQUAL(tag_flac.encoded_by(),      "Encoded by field");
+    BOOST_CHECK_EQUAL(tag_flac.date(),            "2017");
+    BOOST_CHECK_EQUAL(tag_flac.disc_number(),     "1");
+    BOOST_CHECK_EQUAL(tag_flac.disc_total(),      "2");
+    BOOST_CHECK_EQUAL(tag_flac.genre(),           "Pop");
+    BOOST_CHECK_EQUAL(tag_flac.original_artist(), "Original artist field");
+    BOOST_CHECK_EQUAL(tag_flac.title(),           "Title field");
+    BOOST_CHECK_EQUAL(tag_flac.track_number(),    "1");
+    BOOST_CHECK_EQUAL(tag_flac.track_total(),     "4");
+    BOOST_CHECK_EQUAL(tag_flac.url(),             "URL field");
+    
+    cout << "Testing " << mp4_path << endl;
+    BOOST_CHECK(fs::exists(mp4_path));
+    
+    mm::metadata tag_mp4{mp4_path};
+    BOOST_CHECK_EQUAL(tag_mp4.album(),           "Album field");
+    BOOST_CHECK_EQUAL(tag_mp4.album_artist(),    "Album artist field");
+    BOOST_CHECK_EQUAL(tag_mp4.artist(),          "Artist field");
+    BOOST_CHECK_EQUAL(tag_mp4.comment(),         "Comment field");
+    BOOST_CHECK_EQUAL(tag_mp4.composer(),        "Composer field");
+    BOOST_CHECK_EQUAL(tag_mp4.copyright(),       "Copyright field");
+    BOOST_CHECK_EQUAL(tag_mp4.encoded_by(),      "Encoded by field");
+    BOOST_CHECK_EQUAL(tag_mp4.date(),            "2017");
+    BOOST_CHECK_EQUAL(tag_mp4.disc_number(),     "1");
+    BOOST_CHECK_EQUAL(tag_mp4.disc_total(),      "2");
+    BOOST_CHECK_EQUAL(tag_mp4.genre(),           "Pop");
+    BOOST_CHECK_EQUAL(tag_mp4.original_artist(), ""); // No field available
+    BOOST_CHECK_EQUAL(tag_mp4.title(),           "Title field");
+    BOOST_CHECK_EQUAL(tag_mp4.track_number(),    "2");
+    BOOST_CHECK_EQUAL(tag_mp4.track_total(),     "4");
+    BOOST_CHECK_EQUAL(tag_mp4.url(),             ""); // No field available
+}

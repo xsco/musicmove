@@ -50,15 +50,14 @@ public:
     std::string url() const;
 
 private:
-    class impl;
-    class basic_impl;
+    class base_impl;
     class mpeg_impl;
     class flac_impl;
     class ogg_impl;
     class mp4_impl;
-    static std::unique_ptr<impl> make_impl(const boost::filesystem::path &path);
+    static std::unique_ptr<base_impl> make_impl(const boost::filesystem::path &path);
     
-    std::unique_ptr<impl> impl_;
+    std::unique_ptr<base_impl> impl_;
 };
 
 } // namespace mm
