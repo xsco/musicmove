@@ -56,28 +56,40 @@ public:
     {
         auto val = base_impl::disc_number();
         // Remove anything after forward slash, if format is "DISC/TOTAL".
-        val.erase(val.find_first_of('/'));
+        auto pos = val.find_first_of('/');
+        if (pos != std::string::npos)
+            val.erase(pos);
         return val;
     }
     virtual std::string disc_total() const
     {
         auto val = base_impl::disc_number();
         // Remove up to and including a forward slash if format is DISC/TOTAL.
-        val.erase(0, std::min(val.find_first_of('/') + 1, val.size()));
+        auto pos = val.find_first_of('/');
+        if (pos != std::string::npos)
+            val.erase(0, std::min(pos + 1, val.size()));
+        else
+            val = "";
         return val;
     }
     virtual std::string track_number() const
     {
         auto val = base_impl::track_number();
         // Remove anything after forward slash, if format is "TRACK/TOTAL".
-        val.erase(val.find_first_of('/'));
+        auto pos = val.find_first_of('/');
+        if (pos != std::string::npos)
+            val.erase(pos);
         return val;
     }
     virtual std::string track_total() const
     {
         auto val = base_impl::track_number();
         // Remove up to and including a forward slash if format is TRACK/TOTAL.
-        val.erase(0, std::min(val.find_first_of('/') + 1, val.size()));
+        auto pos = val.find_first_of('/');
+        if (pos != std::string::npos)
+            val.erase(0, std::min(pos + 1, val.size()));
+        else
+            val = "";
         return val;
     }
 

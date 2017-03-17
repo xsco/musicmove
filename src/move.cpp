@@ -144,6 +144,11 @@ move_results move_file(const fs::path &file, const context &ctx)
         return results;
     }
     
+    if (ctx.verbose)
+    {
+        cout << "Properties for " << file << endl;
+        tag.print_properties(cout);
+    }
     auto new_file = format_path_easytag(file, ctx.format, tag, ctx);
     
     // See if the new path is actually any different

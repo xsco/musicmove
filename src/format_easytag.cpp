@@ -62,16 +62,17 @@ static string get_token_easytag(const metadata &tag, const char c)
         case 'c':
             return tag.comment();
         case 'd':
-            // Disc number
             return tag.disc_number();
         case 'e':
-            // Encoded by
             return tag.encoded_by();
         case 'g':
             return tag.genre();
         case 'l':
-            // Get total tracks from either TRACKTOTAL tag or TRACKNUMBER
-            return tag.track_total();
+            // Pad with zero if the number is only one character long
+            val = tag.track_total();
+            if (val.length() == 1)
+                val.insert(0, 1, '0');
+            return val;
         case 'n':
             // Pad with zero if the number is only one character long
             val = tag.track_number();
@@ -79,27 +80,24 @@ static string get_token_easytag(const metadata &tag, const char c)
                 val.insert(0, 1, '0');
             return val;
         case 'o':
-            // Original artist tag
             return tag.original_artist();
         case 'p':
-            // Composer
             return tag.composer();
         case 'r':
-            // Copyright
             return tag.copyright();
         case 't':
             return tag.title();
         case 'u':
-            // URL tag
             return tag.url();
         case 'x':
-            // Get number of discs tag from DISCTOTAL or DISCNUMBER
             return tag.disc_total();
         case 'y':
             return tag.date();
         case 'z':
-            // Album artist
-            return tag.album_artist();
+            // Fall back to artist if album artist is not available
+            val = tag.album_artist();
+            if (val == "")
+                return tag.artist();
         case '%':
             // It's an actual percentage sign in the filename!
             return "%";

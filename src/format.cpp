@@ -35,6 +35,8 @@ string convert_for_filesystem(const string &str, const context &ctx)
     // Make the string suitable for writing as a path to the filesystem
     // Assume it is in UTF-8.
     
+    // TODO FIXME - found a break with Roland Clark - What The F**k - use ICU?
+    
     // First, convert to 8-bit Latin1
     string safe = boost::locale::conv::from_utf(str, "Latin1");
     
