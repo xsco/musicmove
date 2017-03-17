@@ -15,12 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MUSICMOVE_METADATA_IMPL_HPP
-#define MUSICMOVE_METADATA_IMPL_HPP
+#ifndef MUSICMOVE_METADATA_BASE_HPP
+#define MUSICMOVE_METADATA_BASE_HPP
 
 #include "metadata.hpp"
 
 #include <tpropertymap.h>
+#include <ostream>
 
 namespace mm {
 
@@ -37,7 +38,7 @@ public:
     virtual std::string comment()         const { return get_prop("COMMENT"); }
     virtual std::string composer()        const { return get_prop("COMPOSER"); }
     virtual std::string copyright()       const { return get_prop("COPYRIGHT"); }
-    virtual std::string encoded_by()      const { return get_prop("ENCODED-BY"); }
+    virtual std::string encoded_by()      const { return get_prop("ENCODEDBY"); }
     virtual std::string date()            const { return get_prop("DATE"); }
     virtual std::string disc_number()     const { return get_prop("DISCNUMBER"); }
     virtual std::string disc_total()      const { return get_prop("DISCTOTAL"); }
@@ -47,6 +48,17 @@ public:
     virtual std::string track_number()    const { return get_prop("TRACKNUMBER"); }
     virtual std::string track_total()     const { return get_prop("TRACKTOTAL"); }
     virtual std::string url()             const { return get_prop("CONTACT"); }
+
+    void print_properties(std::ostream &os)
+    {
+        for (auto &kvp : properties())
+        {
+            for (auto &val : kvp.second)
+            {
+                os << kvp.first << " -> " << val << std::endl;
+            }
+        }
+    }
 
 protected:
     virtual const TagLib::PropertyMap properties() const = 0;
@@ -66,4 +78,4 @@ protected:
 
 } // namespace mm
 
-#endif // MUSICMOVE_METADATA_IMPL_HPP
+#endif // MUSICMOVE_METADATA_BASE_HPP

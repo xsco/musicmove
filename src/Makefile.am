@@ -8,7 +8,10 @@ TESTS = $(check_PROGRAMS)
 musicmove_SOURCES = \
 	musicmove.cpp \
 	context.hpp \
-	metadata.cpp metadata.hpp metadata_impl.hpp\
+	metadata.cpp metadata.hpp metadata_base.hpp \
+	metadata_flac.hpp metadata_mp4.hpp \
+	metadata_mpeg.hpp metadata_ogg_vorbis.hpp \
+	format.cpp format_easytag.cpp format.hpp \
 	move.cpp move.hpp
 
 # Compiler flags.

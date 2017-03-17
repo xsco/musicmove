@@ -21,6 +21,7 @@
 #include <boost/filesystem.hpp>
 #include <string>
 #include <memory>
+#include <ostream>
 
 namespace mm {
 
@@ -49,12 +50,14 @@ public:
     std::string track_total() const;
     std::string url() const;
 
+    void print_properties(std::ostream &os);
+
 private:
     class base_impl;
-    class mpeg_impl;
     class flac_impl;
-    class ogg_impl;
     class mp4_impl;
+    class mpeg_impl;
+    class ogg_vorbis_impl;
     static std::unique_ptr<base_impl> make_impl(const boost::filesystem::path &path);
     
     std::unique_ptr<base_impl> impl_;

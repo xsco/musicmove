@@ -15,39 +15,24 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MUSICMOVE_MOVE_HPP
-#define MUSICMOVE_MOVE_HPP
+#ifndef MUSICMOVE_FORMAT_HPP
+#define MUSICMOVE_FORMAT_HPP
 
+#include <string>
 #include <boost/filesystem/path.hpp>
 #include "context.hpp"
+#include "metadata.hpp"
 
 namespace mm {
 
-struct process_results
-{
-    int files_processed;
-    int subdirs_processed;
-    // Were all contents of a path moved "out" of the path?
-    bool contents_moved_out;
-};
+std::string convert_for_filesystem(const std::string &str, const context &ctx);
 
-process_results process_path(const boost::filesystem::path &path,
-                             const mm::context &ctx);
-
-
-struct move_results
-{
-    // Was a file renamed within the same dir?
-    bool filename_changed;
-    // Was a file moved to a different dir?
-    bool dir_changed;
-    // Was a file moved "out" of its current parent?
-    bool moved_out_of_dir;
-};
-
-move_results move_file(const boost::filesystem::path &file,
-                       const context &ctx);
+boost::filesystem::path format_path_easytag(
+        const boost::filesystem::path &file,
+        const std::string &format,
+        const metadata &tag,
+        const context &ctx);
 
 } // namespace mm
 
-#endif // MUSICMOVE_MOVE_HPP
+#endif // MUSICMOVE_FORMAT_HPP

@@ -18,10 +18,6 @@
 #include "move.hpp"
 
 #include <boost/filesystem.hpp>
-#include <boost/locale.hpp>
-
-#include <algorithm>
-#include <regex>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -29,6 +25,7 @@
 #include <config.h>
 
 #include "metadata.hpp"
+#include "format.hpp"
 
 
 namespace fs = boost::filesystem;
@@ -47,7 +44,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
     process_results results;
     results.files_processed = 0;
     results.subdirs_processed = 0;
-    results.path_moved = false;
+    results.contents_moved_out = false;
     
     if (!fs::exists(p))
     {
@@ -69,16 +66,13 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
                     auto sub_results = process_path(de.path(), ctx);
                     results.files_processed += sub_results.files_processed;
                     results.subdirs_processed += sub_results.subdirs_processed;
-                    if (sub_results.path_moved)
+                    if (sub_results.contents_moved_out)
                         --file_count;
                  });
         
         // Is the directory now empty?
         if (file_count == 0)
         {
-            // TODO - file count might go to zero if all files are moved to
-            // a sub-directory of this one
-            
             if (ctx.simulate || ctx.verbose)
                 cout << "Remove empty directory " << p << endl;
             
@@ -97,7 +91,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
                     fs::remove_all(p);
                 }
             }
-            results.path_moved = true;
+            results.contents_moved_out = true;
         }
     }
     else
@@ -106,192 +100,32 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         auto sub_results = move_file(p, ctx);
         // Update results for the path
         ++results.files_processed;
-        if (sub_results.dir_changed)
-            results.path_moved = true;
+        if (sub_results.moved_out_of_dir)
+            results.contents_moved_out = true;
     }
     
     return results;
 };
 
-static string convert_for_filesystem(const string &str, const context &ctx)
+static bool path_contains(const fs::path &parent, const fs::path &child)
 {
-    // Make the string suitable for writing as a path to the filesystem
-    // Assume it is in UTF-8.
-    
-    // First, convert to 8-bit Latin1
-    string safe = boost::locale::conv::from_utf(str, "Latin1");
-    
-    // Remove marked characters using a small lookup table
-    const char *
-        //   "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
-        tr = "AAAAAAECEEEEIIIIDNOOOOOx0UUUUYPsaaaaaaeceeeeiiiiOnooooo/0uuuuypy";
-    std::transform(safe.begin(), safe.end(), safe.begin(),
-        [&tr](char &sc) {
-            unsigned char &c = reinterpret_cast<unsigned char &>(sc);
-            return c >= 192 ? tr[c - 192] : sc;
-        });
-    
-    // Remove any non-portable characters
-    if (ctx.path_conversion == path_conversion_t::posix)
+    // Work out if a child path is a descendant of a parent path
+    auto ip = parent.begin(), ic = child.begin();
+    while (ip != parent.end())
     {
-        std::regex posix_exp{"[^A-Za-z0-9\\.-_]"};
-        return std::regex_replace(safe, posix_exp, "_");
-    }
-    else if (ctx.path_conversion == path_conversion_t::windows_ascii)
-    {
-        std::regex windows_exp{"[<>:\"/\\|]"};
-        return std::regex_replace(safe, windows_exp, "_");
-    }
-    else
-        throw std::out_of_range("ASSERT: unknown value of path_conversion_t"
-            " not handled!");
-}
-
-// TODO - move EasyTag-specific code into separate file
-static string get_token_easytag(const metadata &tag, const char c)
-{
-    // %a - Track artist
-    // %b - Album
-    // %c - Comment
-    // %d - Disc number
-    // %e - Encoded by
-    // %g - Genre
-    // %l - Number of tracks
-    // %n - Track number
-    // %o - Original artist
-    // %p - Composer
-    // %r - Copyright
-    // %t - Track title
-    // %u - URL
-    // %x - Number of discs
-    // %y - Year
-    // %z - Album artist
-    string val;
-    string::size_type i;
-    stringstream err_msg;
-    // TODO - move tag "fallback" logic to metadata class
-    switch (c)
-    {
-        case 'a':
-            return tag.artist();
-        case 'b':
-            return tag.album();
-        case 'c':
-            return tag.comment();
-        case 'd':
-            // Disc number
-            return tag.disc_number();
-        case 'e':
-            // Encoded by
-            return tag.encoded_by();
-        case 'g':
-            return tag.genre();
-        case 'l':
-            // Get total tracks from either TRACKTOTAL tag or TRACKNUMBER
-            val = tag.track_total();
-            if (val != "")
-                return val;
-            val = tag.track_number();
-            // Look for / and get bit afterwards
-            i = val.find('/');
-            return i == string::npos ? "" : val.substr(i + 1);
-        case 'n':
-            // Pad with zero if the number is only one character long
-            val = tag.track_number();
-            if (val.length() == 1)
-                val.insert(0, 1, '0');
-            return val;
-        case 'o':
-            // Original artist tag
-            return tag.original_artist();
-        case 'p':
-            // Composer
-            return tag.composer();
-        case 'r':
-            // Copyright
-            return tag.copyright();
-        case 't':
-            return tag.title();
-        case 'u':
-            // URL tag
-            return tag.url();
-        case 'x':
-            // Get number of discs tag from DISCTOTAL or DISCNUMBER
-            val = tag.disc_total();
-            if (val != "")
-                return val;
-            val = tag.disc_number();
-            // Look for / and get bit afterwards
-            i = val.find('/');
-            return i == string::npos ? "" : val.substr(i + 1);
-        case 'y':
-            return tag.date();
-        case 'z':
-            // Album artist
-            return tag.album_artist();
-        case '%':
-            // It's an actual percentage sign in the filename!
-            return "%";
-        default:
-            err_msg << "Unknown format specifier `%" << c << "'";
-            throw std::out_of_range(err_msg.str().c_str());
-    }
-}
-
-static fs::path format_path_easytag(const fs::path &file, const string &format,
-                            const metadata &tag, const context &ctx)
-{
-    // Replace tokens in a format string.  Expect EasyTag-style expressions
-    // where each token is a '%' symbol followed by a single letter
-
-    string new_path_str;
-    string::size_type len = format.length();
-    string::size_type last_start = 0;
-    new_path_str.reserve(format.length());
-    for (auto found = format.find_first_of('%');
-         found != string::npos;
-         last_start = found + 1, found = format.find_first_of('%', found + 1))
-    {
-        // Copy anything found so far to the new path
-        if (found > 0 && found > last_start)
-            new_path_str.append(format, last_start, found - last_start);
+        // If we reach the end of the child path, then it can't be contained
+        if (ic == child.end())
+            return false;
         
-        // Ensure no unfinished tokens at end of string
-        ++found;
-        if (found == len)
-        {
-            throw std::invalid_argument(
-                "Unmatched `%' sign at end of format string");
-        }
-    
-        auto c = format[found];
-        // Decode the token and append to the path
-        new_path_str.append(
-            convert_for_filesystem(get_token_easytag(tag, c), ctx));
+        // Is there a mismatch?
+        if (*ip != *ic)
+            return false;
+        
+        ++ip, ++ic;
     }
-    
-    // Work out the full path for the renamed file.
-    // If the format does not specify a directory, it remains in the same
-    // dir; if the format specifies a relative path, it is relative to the
-    // file's current directory (apart from dot and dot-dot); if the format
-    // specifies an absolute path, then it is used as-is.
-    fs::path new_path{new_path_str};
-    if (new_path.is_relative())
-    {
-        // Do we have a relative dir specifier like dot or dot-dot?
-        // If so, convert to absolute based on the current working directory.
-        if (new_path.has_parent_path() &&
-            !new_path_str.empty() && new_path_str[0] == '.')
-            // Path actually starts from CWD like an absolute path
-            new_path = fs::current_path() / new_path;
-        else
-            // Path is relative.  This means relative to its current directory
-            new_path = file.parent_path() / new_path;
-    }
-    
-    // Add file extension
-    new_path += file.extension();
-    return new_path;
+    // Reached the end of the parent path.
+    // Even if the child stops now, it is contained by the parent
+    return true;
 }
 
 move_results move_file(const fs::path &file, const context &ctx)
@@ -345,7 +179,11 @@ move_results move_file(const fs::path &file, const context &ctx)
     }
     
     if (file.parent_path() != new_file.parent_path())
+    {
         results.dir_changed = true;
+        results.moved_out_of_dir =
+            !path_contains(file.parent_path(), new_file.parent_path());
+    }
     if (file.filename() != new_file.filename())
         results.filename_changed = true;
     
@@ -361,7 +199,8 @@ move_results move_file(const fs::path &file, const context &ctx)
     
     if (!ctx.simulate)
     {
-        // TODO ensure parent directory path exists before renaming
+        // Ensure parent directory path exists before renaming
+        fs::create_directories(file.parent_path());
         fs::rename(file, new_file);
     }
 

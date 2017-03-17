@@ -37,15 +37,20 @@ BOOST_AUTO_TEST_CASE (blank_metadata)
     // TODO - test files with no metadata, making sure we get empty strings
 }
 
+// Check files tagged by EasyTag.
 BOOST_AUTO_TEST_CASE (easytag_metadata)
 {
-    fs::path flac_path{file_formats_dir_str + "/01-chirp.easytag.flac"};
-    fs::path mp4_path {file_formats_dir_str + "/02-chirp.easytag.m4a"};
+    fs::path flac_path  {file_formats_dir_str + "/01-chirp.easytag.flac"};
+    fs::path mp4_path   {file_formats_dir_str + "/02-chirp.easytag.m4a"};
+    fs::path mpeg_path  {file_formats_dir_str + "/03-chirp.easytag.mp3"};
+    fs::path vorbis_path{file_formats_dir_str + "/04-chirp.easytag.ogg"};
 
     cout << "Testing " << flac_path << endl;
     BOOST_CHECK(fs::exists(flac_path));
     
     mm::metadata tag_flac{flac_path};
+    tag_flac.print_properties(cout);
+    cout << endl;
     BOOST_CHECK_EQUAL(tag_flac.album(),           "Album field");
     BOOST_CHECK_EQUAL(tag_flac.album_artist(),    "Album artist field");
     BOOST_CHECK_EQUAL(tag_flac.artist(),          "Artist field");
@@ -67,6 +72,8 @@ BOOST_AUTO_TEST_CASE (easytag_metadata)
     BOOST_CHECK(fs::exists(mp4_path));
     
     mm::metadata tag_mp4{mp4_path};
+    tag_mp4.print_properties(cout);
+    cout << endl;
     BOOST_CHECK_EQUAL(tag_mp4.album(),           "Album field");
     BOOST_CHECK_EQUAL(tag_mp4.album_artist(),    "Album artist field");
     BOOST_CHECK_EQUAL(tag_mp4.artist(),          "Artist field");
@@ -83,4 +90,50 @@ BOOST_AUTO_TEST_CASE (easytag_metadata)
     BOOST_CHECK_EQUAL(tag_mp4.track_number(),    "2");
     BOOST_CHECK_EQUAL(tag_mp4.track_total(),     "4");
     BOOST_CHECK_EQUAL(tag_mp4.url(),             ""); // No field available
+    
+    cout << "Testing " << mpeg_path << endl;
+    BOOST_CHECK(fs::exists(mpeg_path));
+    
+    mm::metadata tag_mpeg{mpeg_path};
+    tag_mpeg.print_properties(cout);
+    cout << endl;
+    BOOST_CHECK_EQUAL(tag_mpeg.album(),           "Album field");
+    BOOST_CHECK_EQUAL(tag_mpeg.album_artist(),    "Album artist field");
+    BOOST_CHECK_EQUAL(tag_mpeg.artist(),          "Artist field");
+    BOOST_CHECK_EQUAL(tag_mpeg.comment(),         "Comment field");
+    BOOST_CHECK_EQUAL(tag_mpeg.composer(),        "Composer field");
+    BOOST_CHECK_EQUAL(tag_mpeg.copyright(),       "Copyright field");
+    BOOST_CHECK_EQUAL(tag_mpeg.encoded_by(),      "Encoded by field");
+    BOOST_CHECK_EQUAL(tag_mpeg.date(),            "2017");
+    BOOST_CHECK_EQUAL(tag_mpeg.disc_number(),     "1");
+    BOOST_CHECK_EQUAL(tag_mpeg.disc_total(),      "2");
+    BOOST_CHECK_EQUAL(tag_mpeg.genre(),           "Pop");
+    BOOST_CHECK_EQUAL(tag_mpeg.original_artist(), "Original artist field");
+    BOOST_CHECK_EQUAL(tag_mpeg.title(),           "Title field");
+    BOOST_CHECK_EQUAL(tag_mpeg.track_number(),    "3");
+    BOOST_CHECK_EQUAL(tag_mpeg.track_total(),     "4");
+    BOOST_CHECK_EQUAL(tag_mpeg.url(),             "URL field");
+    
+    cout << "Testing " << vorbis_path << endl;
+    BOOST_CHECK(fs::exists(vorbis_path));
+    
+    mm::metadata tag_vorbis{vorbis_path};
+    tag_vorbis.print_properties(cout);
+    cout << endl;
+    BOOST_CHECK_EQUAL(tag_vorbis.album(),           "Album field");
+    BOOST_CHECK_EQUAL(tag_vorbis.album_artist(),    "Album artist field");
+    BOOST_CHECK_EQUAL(tag_vorbis.artist(),          "Artist field");
+    BOOST_CHECK_EQUAL(tag_vorbis.comment(),         "Comment field");
+    BOOST_CHECK_EQUAL(tag_vorbis.composer(),        "Composer field");
+    BOOST_CHECK_EQUAL(tag_vorbis.copyright(),       "Copyright field");
+    BOOST_CHECK_EQUAL(tag_vorbis.encoded_by(),      "Encoded by field");
+    BOOST_CHECK_EQUAL(tag_vorbis.date(),            "2017");
+    BOOST_CHECK_EQUAL(tag_vorbis.disc_number(),     "1");
+    BOOST_CHECK_EQUAL(tag_vorbis.disc_total(),      "2");
+    BOOST_CHECK_EQUAL(tag_vorbis.genre(),           "Pop");
+    BOOST_CHECK_EQUAL(tag_vorbis.original_artist(), "Original artist field");
+    BOOST_CHECK_EQUAL(tag_vorbis.title(),           "Title field");
+    BOOST_CHECK_EQUAL(tag_vorbis.track_number(),    "4");
+    BOOST_CHECK_EQUAL(tag_vorbis.track_total(),     "4");
+    BOOST_CHECK_EQUAL(tag_vorbis.url(),             "URL field");
 }
