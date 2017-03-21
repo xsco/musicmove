@@ -34,36 +34,53 @@ string convert_for_filesystem(const string &str, const context &ctx)
 {
     // Make the string suitable for writing as a path to the filesystem
     // Assume it is in UTF-8.
+    string safe;
     
-    // TODO FIXME - found a break with Roland Clark - What The F**k - use ICU?
+    if (ctx.path_conversion == path_conversion_t::utf8)
+    {
+        // We want to keep the path element as UTF-8.  We will only remove
+        // typical directory separators, therefore.
+        safe = std::regex_replace(str, std::regex{"[/\\\\]"}, "");
+    }
+    else
+    {
+        // First, convert to 8-bit Latin1
+        safe = boost::locale::conv::from_utf(str, "Latin1");
     
-    // First, convert to 8-bit Latin1
-    string safe = boost::locale::conv::from_utf(str, "Latin1");
-    
-    // Remove marked characters using a small lookup table
-    const char *
-        //   "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
-        tr = "AAAAAAECEEEEIIIIDNOOOOOx0UUUUYPsaaaaaaeceeeeiiiiOnooooo/0uuuuypy";
-    std::transform(safe.begin(), safe.end(), safe.begin(),
-        [&tr](char &sc) {
-            unsigned char &c = reinterpret_cast<unsigned char &>(sc);
-            return c >= 192 ? tr[c - 192] : sc;
-        });
+        // Remove marked characters using a small lookup table
+        // This is very crude, and not linguistically accurate, but can be
+        // argued to suffice for conversion to a 'safe' filesystem path
+        const char *tr =
+            "AAAAAAECEEEEIIIIDNOOOOO*OUUUUYPsaaaaaaeceeeeiiiionooooo/ouuuuypy";
+        //  "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
+        std::transform(safe.begin(), safe.end(), safe.begin(),
+            [&tr](char &sc) {
+                unsigned char &c = reinterpret_cast<unsigned char &>(sc);
+                return c >= 192 ? tr[c - 192] : sc;
+            });
+    }
     
     // Remove any non-portable characters
     if (ctx.path_conversion == path_conversion_t::posix)
     {
-        std::regex posix_exp{"[^A-Za-z0-9\\.-_]"};
-        return std::regex_replace(safe, posix_exp, "_");
+        std::regex posix_exp{"[^A-Za-z0-9\\._-]"};
+        safe = std::regex_replace(safe, posix_exp, "_");
     }
     else if (ctx.path_conversion == path_conversion_t::windows_ascii)
     {
         std::regex windows_exp{"[<>:\"/\\|]"};
-        return std::regex_replace(safe, windows_exp, "_");
+        safe = std::regex_replace(safe, windows_exp, "_");
     }
     else
         throw std::out_of_range("ASSERT: unknown value of path_conversion_t"
             " not handled!");
+
+    // Trim trailing underscores
+    safe.erase(
+        std::find_if(safe.rbegin(), safe.rend(),
+                     [](auto c) { return c != '_'; }).base(),
+        safe.end());
+    return safe;
 }
 
 } // namespace mm

@@ -30,6 +30,10 @@ AC_SUBST([BOOST_LOCALE_LDADD], [-lboost_locale])
 AC_SUBST([BOOST_UTF_LDADD], [-lboost_unit_test_framework])
 AC_SUBST([TAGLIB_LDADD], [$TAGLIB_LIBS])
 
+# Path conversion default, which may be OS-specific one day.
+AC_DEFINE([PATH_CONVERSION_DEFAULT_VALUE], ["windows-ascii"],
+          [Default path conversion command-line value])
+
 # Use config.h
 AC_CONFIG_HEADERS([config.h])
 

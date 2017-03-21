@@ -27,7 +27,7 @@ namespace mm {
 
 enum class path_uniqueness_t { skip, exit };
 
-enum class path_conversion_t { posix, windows_ascii };
+enum class path_conversion_t { posix, utf8, windows_ascii };
 
 struct context
 {

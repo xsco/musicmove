@@ -96,10 +96,12 @@ int main(int argc, char *argv[])
             "will need to use this switch to explicitly tell the program that "
             "you actually want it to rename files.")
         ("path-conversion", po::value<string>(),
-            "Approach for converting meta-data characters into paths.\n"
-            "`windows-ascii' (the default approach) converts to 7-bit ASCII "
-            "and removes any characters not normally permitted on Microsoft "
-            "Windows machines.\n"
+            "Approach for converting meta-data characters into paths "
+            "(the default is `" PATH_CONVERSION_DEFAULT_VALUE "').\n"
+            "`windows-ascii' converts to 7-bit ASCII and removes any "
+            "characters not normally permitted on Microsoft Windows machines.\n"
+            "`utf-8' uses the full expressivity of UTF-8 Unicode paths, "
+            "assuming they are supported by your filesystem.\n"
             "`posix' is a restrictive approach that permits only unaccented "
             "letters (of either case), numbers, dot, underscore, and hyphen.")
         ("exit-on-duplicate", po::bool_switch(),
@@ -183,10 +185,12 @@ int main(int argc, char *argv[])
         ? mm::path_uniqueness_t::skip
         : mm::path_uniqueness_t::exit;
     auto path_conversion_str = vm.count("path-conversion") <= 0
-        ? "windows-ascii"
+        ? PATH_CONVERSION_DEFAULT_VALUE
         : vm["path-conversion"].as<string>();
     if (path_conversion_str == "windows-ascii")
         ctx.path_conversion = mm::path_conversion_t::windows_ascii;
+    else if (path_conversion_str == "utf-8")
+        ctx.path_conversion = mm::path_conversion_t::utf8;
     else if (path_conversion_str == "posix")
         ctx.path_conversion = mm::path_conversion_t::posix;
     else
