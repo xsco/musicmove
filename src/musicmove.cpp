@@ -102,8 +102,9 @@ int main(int argc, char *argv[])
             "characters not normally permitted on Microsoft Windows machines.\n"
             "`utf-8' uses the full expressivity of UTF-8 Unicode paths, "
             "assuming they are supported by your filesystem.\n"
-            "`posix' is a restrictive approach that permits only unaccented "
-            "letters (of either case), numbers, dot, underscore, and hyphen.")
+            "`posix' is a restrictive but portable approach that permits only "
+            "unaccented letters (of either case), numbers, dot, underscore, "
+            "and hyphen.")
         ("exit-on-duplicate", po::bool_switch(),
             "Exit if we encounter two files that would be rewritten to the "
             "same path on disk (default is to skip any such duplicates).")

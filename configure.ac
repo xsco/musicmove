@@ -1,5 +1,5 @@
 AC_INIT([musicmove bulk renamer for music files], [0.0.1], [bugs@xsco.org], [musicmove])
-#AM_SILENT_RULES([yes])
+AM_SILENT_RULES([yes])
 AM_INIT_AUTOMAKE([-Wall])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -10,6 +10,7 @@ AC_PROG_RANLIB
 
 AM_PROG_CC_C_O
 AM_PROG_AR
+AC_SUBST([ARFLAGS], [cr])
 
 # Require C++14
 AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])

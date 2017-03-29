@@ -30,7 +30,7 @@
 namespace fs = boost::filesystem;
 using namespace std;
 
-const string file_formats_dir_str = STRINGIFY(TESTDATA_DIR) "/file_formats";
+const string testdata_dir_str = STRINGIFY(TESTDATA_DIR) "/metadata";
 
 BOOST_AUTO_TEST_CASE (blank_metadata)
 {
@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE (blank_metadata)
 // Check files minmally-tagged by EasyTag.
 BOOST_AUTO_TEST_CASE (easytag_min_metadata)
 {
-    fs::path flac_path  {file_formats_dir_str + "/chirp.min.easytag.01.flac"};
-    fs::path mp4_path   {file_formats_dir_str + "/chirp.min.easytag.02.m4a"};
-    fs::path mpeg_path  {file_formats_dir_str + "/chirp.min.easytag.03.mp3"};
-    fs::path vorbis_path{file_formats_dir_str + "/chirp.min.easytag.04.ogg"};
+    fs::path flac_path  {testdata_dir_str + "/chirp.min.easytag.01.flac"};
+    fs::path mp4_path   {testdata_dir_str + "/chirp.min.easytag.02.m4a"};
+    fs::path mpeg_path  {testdata_dir_str + "/chirp.min.easytag.03.mp3"};
+    fs::path vorbis_path{testdata_dir_str + "/chirp.min.easytag.04.ogg"};
 
     cout << "Testing " << flac_path << endl;
     BOOST_CHECK(fs::exists(flac_path));
@@ -141,10 +141,10 @@ BOOST_AUTO_TEST_CASE (easytag_min_metadata)
 // Check files fully-tagged (i.e. every field populated) by EasyTag.
 BOOST_AUTO_TEST_CASE (easytag_full_metadata)
 {
-    fs::path flac_path  {file_formats_dir_str + "/chirp.full.easytag.01.flac"};
-    fs::path mp4_path   {file_formats_dir_str + "/chirp.full.easytag.02.m4a"};
-    fs::path mpeg_path  {file_formats_dir_str + "/chirp.full.easytag.03.mp3"};
-    fs::path vorbis_path{file_formats_dir_str + "/chirp.full.easytag.04.ogg"};
+    fs::path flac_path  {testdata_dir_str + "/chirp.full.easytag.01.flac"};
+    fs::path mp4_path   {testdata_dir_str + "/chirp.full.easytag.02.m4a"};
+    fs::path mpeg_path  {testdata_dir_str + "/chirp.full.easytag.03.mp3"};
+    fs::path vorbis_path{testdata_dir_str + "/chirp.full.easytag.04.ogg"};
 
     cout << "Testing " << flac_path << endl;
     BOOST_CHECK(fs::exists(flac_path));
