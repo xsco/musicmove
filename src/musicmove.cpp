@@ -159,6 +159,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     
+    // TODO - implement ChaiScript option to return a format string
     // Do we have a format specified?
     if (vm.count("format") <= 0)
     {

@@ -38,9 +38,9 @@ string convert_for_filesystem(const string &str, const context &ctx)
     
     if (ctx.path_conversion == path_conversion_t::utf8)
     {
-        // We want to keep the path element as UTF-8.  We will only remove
+        // We want to keep the path element as UTF-8.  We will only convert
         // typical directory separators, therefore.
-        safe = std::regex_replace(str, std::regex{"[/\\\\]"}, "");
+        safe = std::regex_replace(str, std::regex{"[/\\\\]"}, "_");
     }
     else
     {
@@ -56,9 +56,24 @@ string convert_for_filesystem(const string &str, const context &ctx)
         std::transform(safe.begin(), safe.end(), safe.begin(),
             [&tr](char &sc) {
                 unsigned char &c = reinterpret_cast<unsigned char &>(sc);
-                return c >= 192 ? tr[c - 192] : sc;
+                if (c >= 192)
+                    return tr[c - 192];
+                else if (c >= 128)
+                    return '_';
+                else
+                    return sc;
             });
     }
+    
+    // Remove control characters in all cases
+    std::transform(safe.begin(), safe.end(), safe.begin(),
+        [](char &sc) {
+            unsigned char &c = reinterpret_cast<unsigned char &>(sc);
+            if (c < 0x20)
+                return '_';
+            else
+                return sc;
+        });
     
     // Remove any non-portable characters
     if (ctx.path_conversion == path_conversion_t::posix)
@@ -68,18 +83,19 @@ string convert_for_filesystem(const string &str, const context &ctx)
     }
     else if (ctx.path_conversion == path_conversion_t::windows_ascii)
     {
-        std::regex windows_exp{"[<>:\"/\\|]"};
+        std::regex windows_exp{"[<>:\"/\\\\\\|\\?\\*]"};
         safe = std::regex_replace(safe, windows_exp, "_");
     }
-    else
-        throw std::out_of_range("ASSERT: unknown value of path_conversion_t"
-            " not handled!");
 
-    // Trim trailing underscores
-    safe.erase(
-        std::find_if(safe.rbegin(), safe.rend(),
-                     [](auto c) { return c != '_'; }).base(),
-        safe.end());
+    // Trim trailing underscores if not native UTF-8
+    if (ctx.path_conversion != path_conversion_t::utf8)
+    {
+        safe.erase(
+            std::find_if(safe.rbegin(), safe.rend(),
+                         [](auto c) { return c != '_'; }).base(),
+            safe.end());
+    }
+    
     return safe;
 }
 

@@ -6,7 +6,10 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CXX
 AC_LANG([C++])
+AC_PROG_RANLIB
+
 AM_PROG_CC_C_O
+AM_PROG_AR
 
 # Require C++14
 AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])
@@ -21,14 +24,15 @@ AC_CHECK_HEADERS([boost/locale.hpp], [],
 AC_CHECK_HEADERS([boost/test/unit_test.hpp], [],
     [AC_MSG_ERROR([couldn't find boost/test/unit_test.hpp])])
 PKG_CHECK_MODULES([TAGLIB], [taglib])
+#PKG_CHECK_MODULES([CHAISCRIPT], [chaiscript])
 
 # Library names.
-AC_SUBST([BOOST_SYSTEM_LDADD], [-lboost_system])
-AC_SUBST([BOOST_PROGRAM_OPTIONS_LDADD], [-lboost_program_options])
-AC_SUBST([BOOST_FILESYSTEM_LDADD], [-lboost_filesystem])
-AC_SUBST([BOOST_LOCALE_LDADD], [-lboost_locale])
+AC_SUBST([BOOST_SYSTEM_LIBADD], [-lboost_system])
+AC_SUBST([BOOST_PROGRAM_OPTIONS_LIBADD], [-lboost_program_options])
+AC_SUBST([BOOST_FILESYSTEM_LIBADD], [-lboost_filesystem])
+AC_SUBST([BOOST_LOCALE_LIBADD], [-lboost_locale])
+AC_SUBST([TAGLIB_LIBADD], [$TAGLIB_LIBS])
 AC_SUBST([BOOST_UTF_LDADD], [-lboost_unit_test_framework])
-AC_SUBST([TAGLIB_LDADD], [$TAGLIB_LIBS])
 
 # Path conversion default, which may be OS-specific one day.
 AC_DEFINE([PATH_CONVERSION_DEFAULT_VALUE], ["windows-ascii"],
