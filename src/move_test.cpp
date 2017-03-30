@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE (rename_file_same_dir_clash)
     BOOST_CHECK_EQUAL(fs::exists(d1), true);
     
     // Second call should throw with a uniqueness problem
-    BOOST_CHECK_THROW(mm::move_file(s2, ctx), std::runtime_error);
+    BOOST_CHECK_THROW(mm::move_file(s2, ctx), mm::path_uniqueness_violation);
     BOOST_CHECK_EQUAL(fs::exists(s2), true); // Should still exist
     BOOST_CHECK_EQUAL(fs::exists(d1), true); // Should still exist
     
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE (move_file_new_dir_diff_hier_clash)
     BOOST_CHECK_EQUAL(fs::exists(d1), true);
     
     // Attempt to move 2nd file should throw with a uniqueness problem
-    BOOST_CHECK_THROW(mm::move_file(s2, ctx), std::runtime_error);
+    BOOST_CHECK_THROW(mm::move_file(s2, ctx), mm::path_uniqueness_violation);
     BOOST_CHECK_EQUAL(fs::exists(s2), true); // Should still exist
     BOOST_CHECK_EQUAL(fs::exists(d1), true); // Should still exist
     

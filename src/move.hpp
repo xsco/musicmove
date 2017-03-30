@@ -19,6 +19,8 @@
 #define MUSICMOVE_MOVE_HPP
 
 #include <boost/filesystem/path.hpp>
+#include <string>
+#include <stdexcept>
 #include "context.hpp"
 
 namespace mm {
@@ -34,6 +36,12 @@ struct process_results
 process_results process_path(const boost::filesystem::path &path,
                              const mm::context &ctx);
 
+struct path_uniqueness_violation : std::runtime_error
+{
+    explicit path_uniqueness_violation(const std::string &what_arg) :
+        std::runtime_error(what_arg)
+    {}
+};
 
 struct move_results
 {

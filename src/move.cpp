@@ -18,6 +18,7 @@
 #include "move.hpp"
 
 #include <boost/filesystem.hpp>
+#include <vector>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -58,19 +59,31 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         // It's a directory.  Recurse over everything within.
         int dir_entry_count = 0;
         ++results.dirs_processed;
-        for_each(fs::directory_iterator{p},
-                 fs::directory_iterator{},
-                 [&ctx, &results, &dir_entry_count](auto &de)
-                 {
-                    ++dir_entry_count;
-                    // Process the sub-directory
-                    // TODO FIXME - unspecified behaviour whether the iterator picks up entries added by the recursive call!  Maybe change the approach?  In theory, this loop should not need to consider any such new additions, because they will already be appropriately renamed.
-                    auto sub_results = process_path(de.path(), ctx);
-                    results.files_processed += sub_results.files_processed;
-                    results.dirs_processed += sub_results.dirs_processed;
-                    if (sub_results.moved_out)
-                        --dir_entry_count;
-                 });
+        
+        // It is unspecified behaviour what happens to directory_iterators if
+        // new subdirs are added to this path by the recursive calls.  We do not
+        // need to process any such newly-added subdirs (they'll already be
+        // perfectly named, by definition), so we will copy the list of entries
+        // in advance and then iterate over that.
+        std::vector<fs::path> sub_paths;
+        std::for_each(
+            fs::directory_iterator{p},
+            fs::directory_iterator{},
+            [&sub_paths](auto &de) { sub_paths.push_back(de.path()); });
+        
+        std::for_each(
+            std::begin(sub_paths),
+            std::end(sub_paths),
+            [&ctx, &results, &dir_entry_count](auto &sub_path)
+            {
+                ++dir_entry_count;
+                // Process the sub-directory
+                auto sub_results = process_path(sub_path, ctx);
+                results.files_processed += sub_results.files_processed;
+                results.dirs_processed += sub_results.dirs_processed;
+                if (sub_results.moved_out)
+                    --dir_entry_count;
+            });
         
         // Is the directory now potentially empty?
         if (dir_entry_count == 0)
@@ -185,8 +198,7 @@ move_results move_file(const fs::path &file, const context &ctx)
             stringstream msg;
             msg << "Tried to move " << file << " to " << new_file
                 << ", but that path already exists";
-            // TODO - replace with dedicated path_uniqueness_violation exception class or similar
-            throw std::runtime_error(msg.str().c_str());
+            throw path_uniqueness_violation(msg.str());
         }
         else
             throw std::out_of_range("ASSERT: Unknown value of "
