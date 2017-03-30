@@ -32,15 +32,25 @@ using std::string;
 
 // MOCK - empty base_impl class
 class metadata::base_impl
-{};
+{
+public:
+    base_impl(const fs::path &path) :
+        has_tag_{path.extension() == ".inc"}
+    {}
+
+    bool has_tag() const { return has_tag_; }
+
+private:
+    bool has_tag_;
+};
 
 std::unique_ptr<metadata::base_impl> metadata::make_impl(const fs::path &path)
 {
-    throw std::runtime_error{"Code should never be called"};
+    return std::unique_ptr<metadata::base_impl>{new metadata::base_impl{path}};
 }
 
 metadata::metadata(const fs::path &path) :
-    impl_{}
+    impl_{make_impl(path)}
 {}
 
 metadata::~metadata()
@@ -52,7 +62,7 @@ void metadata::print_properties(std::ostream &os)
 }
 
 // MOCK - return empty string for all tags
-bool   metadata::has_tag()         const { return true; }
+bool   metadata::has_tag()         const { return impl_->has_tag(); }
 string metadata::album()           const { return ""; }
 string metadata::album_artist()    const { return ""; }
 string metadata::artist()          const { return ""; }

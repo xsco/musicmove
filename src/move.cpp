@@ -43,8 +43,8 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
 {
     process_results results;
     results.files_processed = 0;
-    results.subdirs_processed = 0;
-    results.contents_moved_out = false;
+    results.dirs_processed = 0;
+    results.moved_out = false;
     
     if (!fs::exists(p))
     {
@@ -56,52 +56,61 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
     if (fs::is_directory(p))
     {
         // It's a directory.  Recurse over everything within.
-        ++results.subdirs_processed;
-        int file_count = 0;
+        int dir_entry_count = 0;
+        ++results.dirs_processed;
         for_each(fs::directory_iterator{p},
                  fs::directory_iterator{},
-                 [&ctx, &results, &file_count](auto &de)
+                 [&ctx, &results, &dir_entry_count](auto &de)
                  {
-                    ++file_count;
+                    ++dir_entry_count;
+                    // Process the sub-directory
+                    // TODO FIXME - unspecified behaviour whether the iterator picks up entries added by the recursive call!  Maybe change the approach?  In theory, this loop should not need to consider any such new additions, because they will already be appropriately renamed.
                     auto sub_results = process_path(de.path(), ctx);
                     results.files_processed += sub_results.files_processed;
-                    results.subdirs_processed += sub_results.subdirs_processed;
-                    if (sub_results.contents_moved_out)
-                        --file_count;
+                    results.dirs_processed += sub_results.dirs_processed;
+                    if (sub_results.moved_out)
+                        --dir_entry_count;
                  });
         
-        // Is the directory now empty?
-        if (file_count == 0)
+        // Is the directory now potentially empty?
+        if (dir_entry_count == 0)
         {
             if (ctx.simulate || ctx.verbose)
-                cout << "Remove empty directory " << p << endl;
+                cout << "Considering removal of potentially-empty directory "
+                     << p << ".. ";
             
             if (!ctx.simulate)
             {
-                // Safety check to make sure the dir is definitely empty
-                if (fs::directory_iterator{p} != fs::directory_iterator{})
+                // Potentially, the recursive calls to process_path could have
+                // created brand new subdirs in this directory, in which case
+                // we should not attempt removal.  Only attempt removal if the
+                // directory is genuinely empty.
+                // Because we rely on the filesystem to help us with this step,
+                // this is currently a shortcoming of the `simulate' option.
+                if (fs::directory_iterator{p} == fs::directory_iterator{})
                 {
-                    cerr << "Expected " << p << "to be an empty directory "
-                            "after music out of it, but it is not empty.  "
-                            "This is a bug and should be reported to "
-                            PACKAGE_BUGREPORT << endl;
+                    // Remove this dir and all its contents
+                    if (ctx.verbose)
+                        cout << "empty" << endl;
+                    fs::remove_all(p);
+                    results.moved_out = true;
                 }
                 else
                 {
-                    fs::remove_all(p);
+                    if (ctx.verbose)
+                        cout << "not empty" << endl;
                 }
             }
-            results.contents_moved_out = true;
         }
     }
     else
     {
         // Read as a file
-        auto sub_results = move_file(p, ctx);
+        auto file_results = move_file(p, ctx);
         // Update results for the path
         ++results.files_processed;
-        if (sub_results.moved_out_of_dir)
-            results.contents_moved_out = true;
+        if (file_results.moved_out_of_dir)
+            results.moved_out = true;
     }
     
     return results;
@@ -206,7 +215,7 @@ move_results move_file(const fs::path &file, const context &ctx)
     if (!ctx.simulate)
     {
         // Ensure parent directory path exists before renaming
-        fs::create_directories(file.parent_path());
+        fs::create_directories(new_file.parent_path());
         fs::rename(file, new_file);
     }
 

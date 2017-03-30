@@ -26,9 +26,9 @@ namespace mm {
 struct process_results
 {
     int files_processed;
-    int subdirs_processed;
-    // Were all contents of a path moved "out" of the path?
-    bool contents_moved_out;
+    int dirs_processed;
+    // Was the path moved "out" of its current parent path?
+    bool moved_out;
 };
 
 process_results process_path(const boost::filesystem::path &path,
