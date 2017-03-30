@@ -57,9 +57,12 @@ BOOST_AUTO_TEST_CASE (path_conversion_posix)
         "some_title__name_of_remix");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "This / That", ctx),
-        "This___That");
+        "This_-_That");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        "xyzw<>:\"/\\|", ctx),
+        "That & This", ctx),
+        "That___This");
+    BOOST_CHECK_EQUAL(convert_for_filesystem(
+        "xyzw<>:\"|", ctx),
         "xyzw");
 
     // Accented characters (in UTF-8) should be converted to non-accented
@@ -128,10 +131,13 @@ BOOST_AUTO_TEST_CASE(path_conversion_utf8)
         "some title (name of remix)");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "This / That", ctx),
-        "This _ That");
+        "This - That");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        "xyzw<>:\"/\\|", ctx),
-        "xyzw<>:\"__|");
+        "That & This", ctx),
+        "That & This");
+    BOOST_CHECK_EQUAL(convert_for_filesystem(
+        "xyzw<>:\"|", ctx),
+        "xyzw<>:\"|");
 
     // Accented characters (in UTF-8) should be be preserved
     BOOST_CHECK_EQUAL(convert_for_filesystem(
@@ -204,9 +210,12 @@ BOOST_AUTO_TEST_CASE(path_conversion_windows)
         "some title (name of remix)");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "This / That", ctx),
-        "This _ That");
+        "This - That");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        "xyzw<>:\"/\\|", ctx),
+        "That & This", ctx),
+        "That & This");
+    BOOST_CHECK_EQUAL(convert_for_filesystem(
+        "xyzw<>:\"|", ctx),
         "xyzw");
 
     // Accented characters (in UTF-8) should be converted to non-accented

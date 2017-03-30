@@ -34,18 +34,14 @@ string convert_for_filesystem(const string &str, const context &ctx)
 {
     // Make the string suitable for writing as a path to the filesystem
     // Assume it is in UTF-8.
-    string safe;
     
-    if (ctx.path_conversion == path_conversion_t::utf8)
-    {
-        // We want to keep the path element as UTF-8.  We will only convert
-        // typical directory separators, therefore.
-        safe = std::regex_replace(str, std::regex{"[/\\\\]"}, "_");
-    }
-    else
+    // Always convert typical directory separators to hyphen.
+    string safe = std::regex_replace(str, std::regex{"[/\\\\]"}, "-");
+    
+    if (ctx.path_conversion != path_conversion_t::utf8)
     {
         // First, convert to 8-bit Latin1
-        safe = boost::locale::conv::from_utf(str, "Latin1");
+        safe = boost::locale::conv::from_utf(safe, "Latin1");
     
         // Remove marked characters using a small lookup table
         // This is very crude, and not linguistically accurate, but can be
@@ -78,7 +74,7 @@ string convert_for_filesystem(const string &str, const context &ctx)
     // Remove any non-portable characters
     if (ctx.path_conversion == path_conversion_t::posix)
     {
-        std::regex posix_exp{"[^A-Za-z0-9\\._-]"};
+        std::regex posix_exp{"[^A-Za-z0-9\\._\\-]"};
         safe = std::regex_replace(safe, posix_exp, "_");
     }
     else if (ctx.path_conversion == path_conversion_t::windows_ascii)

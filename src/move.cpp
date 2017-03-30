@@ -49,7 +49,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
     
     if (!fs::exists(p))
     {
-        cerr << "Warning: path does not exist: " << p << endl;
+        cerr << "Warning: path does not exist: " << p.string() << endl;
         return results;
     }
 
@@ -90,7 +90,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         {
             if (ctx.simulate || ctx.verbose)
                 cout << "Considering removal of potentially-empty directory "
-                     << p << ".. ";
+                     << p.string() << ".. ";
             
             if (!ctx.simulate)
             {
@@ -162,13 +162,14 @@ move_results move_file(const fs::path &file, const context &ctx)
     if (!tag.has_tag())
     {
         if (ctx.verbose)
-            cerr << "No tag found for file " << file << ".. skipping" << endl;
+            cerr << "No tag found for file " << file.string()
+                 << ".. skipping" << endl;
         return results;
     }
     
     if (ctx.verbose)
     {
-        cout << "Properties for " << file << endl;
+        cout << "Properties for " << file.string() << endl;
         tag.print_properties(cout);
     }
     auto new_file = format_path_easytag(file, ctx.format, tag, ctx);
@@ -178,7 +179,7 @@ move_results move_file(const fs::path &file, const context &ctx)
     {
         // No change in the file's path.
         if (ctx.verbose)
-            cout << "No change in path for " << file << endl;
+            cout << "No change in path for " << file.string() << endl;
         return results;
     }
 
@@ -188,7 +189,8 @@ move_results move_file(const fs::path &file, const context &ctx)
         // Clash with destination path.
         if (ctx.path_uniqueness == path_uniqueness_t::skip)
         {
-            cout << "Warning: want to move " << file << " to " << new_file
+            cout << "Warning: want to move " << file.string()
+                 << " to " << new_file.string()
                  << ", but that path already exists.  Skipping for now.."
                  << endl;
             return results;
@@ -196,7 +198,8 @@ move_results move_file(const fs::path &file, const context &ctx)
         else if (ctx.path_uniqueness == path_uniqueness_t::exit)
         {
             stringstream msg;
-            msg << "Tried to move " << file << " to " << new_file
+            msg << "Tried to move " << file.string()
+                << " to " << new_file.string()
                 << ", but that path already exists";
             throw path_uniqueness_violation(msg.str());
         }
@@ -217,11 +220,14 @@ move_results move_file(const fs::path &file, const context &ctx)
     if (ctx.simulate || ctx.verbose)
     {
         if (results.dir_changed && results.filename_changed)
-            cout << "Move/rename " << file << " to " << new_file << endl;
+            cout << "Move/rename " << file.string()
+                 << " to " << new_file.string() << endl;
         else if (results.dir_changed)
-            cout << "Move " << file << " to " << new_file.parent_path() << endl;
+            cout << "Move " << file.string()
+                 << " to " << new_file.parent_path().string() << endl;
         else
-            cout << "Rename " << file << " to " << new_file.filename() << endl;
+            cout << "Rename " << file.string()
+                 << " to " << new_file.filename().string() << endl;
     }
     
     if (!ctx.simulate)
