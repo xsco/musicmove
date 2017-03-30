@@ -18,6 +18,7 @@
 #include "format.hpp"
 
 #include <stdexcept>
+#include <iostream>
 
 // This is a MOCK implementation of the classes and functions in format.hpp
 
@@ -40,7 +41,8 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
     fs::path p{format};
     
     // MOCK - interpret the filename as a number meaning a pre-defined format
-    auto typ = file.stem().string().substr(3);
+    auto ext = file.extension();
+    auto typ = file.stem().string().substr(0, 3);
     if      (typ == "001") p /= "101-AA1-TT1";
     else if (typ == "002") p /= "102-AA1-TT2";
     else if (typ == "003") p /= "201-AA1-TT3";
@@ -55,6 +57,7 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
     else if (typ == "012") p /= "Alb2/202-AA1-TT4";
     else
         throw std::out_of_range(typ.c_str());
+    p += ext;
     return p;
 }
 

@@ -175,7 +175,8 @@ move_results move_file(const fs::path &file, const context &ctx)
         {
             stringstream msg;
             msg << "Tried to move " << file << " to " << new_file
-                 << ", but that path already exists";
+                << ", but that path already exists";
+            // TODO - replace with dedicated path_uniqueness_violation exception class or similar
             throw std::runtime_error(msg.str().c_str());
         }
         else

@@ -28,11 +28,11 @@ PKG_CHECK_MODULES([TAGLIB], [taglib])
 #PKG_CHECK_MODULES([CHAISCRIPT], [chaiscript])
 
 # Library names.
-AC_SUBST([BOOST_SYSTEM_LIBADD], [-lboost_system])
-AC_SUBST([BOOST_PROGRAM_OPTIONS_LIBADD], [-lboost_program_options])
-AC_SUBST([BOOST_FILESYSTEM_LIBADD], [-lboost_filesystem])
-AC_SUBST([BOOST_LOCALE_LIBADD], [-lboost_locale])
-AC_SUBST([TAGLIB_LIBADD], [$TAGLIB_LIBS])
+AC_SUBST([BOOST_SYSTEM_LDADD], [-lboost_system])
+AC_SUBST([BOOST_PROGRAM_OPTIONS_LDADD], [-lboost_program_options])
+AC_SUBST([BOOST_FILESYSTEM_LDADD], [-lboost_filesystem])
+AC_SUBST([BOOST_LOCALE_LDADD], [-lboost_locale])
+AC_SUBST([TAGLIB_LDADD], [$TAGLIB_LIBS])
 AC_SUBST([BOOST_UTF_LDADD], [-lboost_unit_test_framework])
 
 # Path conversion default, which may be OS-specific one day.

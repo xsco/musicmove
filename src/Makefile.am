@@ -30,11 +30,11 @@ musicmove_CPPFLAGS = \
 # Additional libraries for the linker.
 musicmove_LDADD = \
 	libmusicmove.a \
-	$(BOOST_SYSTEM_LIBADD) \
-	$(BOOST_PROGRAM_OPTIONS_LIBADD) \
-	$(BOOST_FILESYSTEM_LIBADD) \
-	$(BOOST_LOCALE_LIBADD) \
-	$(TAGLIB_LIBADD)
+	$(BOOST_SYSTEM_LDADD) \
+	$(BOOST_PROGRAM_OPTIONS_LDADD) \
+	$(BOOST_FILESYSTEM_LDADD) \
+	$(BOOST_LOCALE_LDADD) \
+	$(TAGLIB_LDADD)
 
 
 # Unit test programs
@@ -50,9 +50,9 @@ metadata_test_CPPFLAGS = \
 	$(TAGLIB_CFLAGS) \
 	-DTESTDATA_DIR="../testdata"
 metadata_test_LDADD = \
-	$(BOOST_SYSTEM_LIBADD) \
-	$(BOOST_FILESYSTEM_LIBADD) \
-	$(TAGLIB_LIBADD) \
+	$(BOOST_SYSTEM_LDADD) \
+	$(BOOST_FILESYSTEM_LDADD) \
+	$(TAGLIB_LDADD) \
 	$(BOOST_UTF_LDADD)
 
 # Format test
@@ -63,9 +63,9 @@ format_test_CPPFLAGS = \
 	-Werror -Wall \
 	-DTESTDATA_DIR="../testdata"
 format_test_LDADD = \
-	$(BOOST_SYSTEM_LIBADD) \
-	$(BOOST_FILESYSTEM_LIBADD) \
-	$(BOOST_LOCALE_LIBADD) \
+	$(BOOST_SYSTEM_LDADD) \
+	$(BOOST_FILESYSTEM_LDADD) \
+	$(BOOST_LOCALE_LDADD) \
 	$(BOOST_UTF_LDADD)
 
 # Move test
@@ -78,7 +78,7 @@ move_test_CPPFLAGS = \
 	-Werror -Wall \
 	-DTESTDATA_DIR="../testdata"
 move_test_LDADD = \
-	$(BOOST_SYSTEM_LIBADD) \
-	$(BOOST_FILESYSTEM_LIBADD) \
+	$(BOOST_SYSTEM_LDADD) \
+	$(BOOST_FILESYSTEM_LDADD) \
 	$(BOOST_UTF_LDADD)
 
