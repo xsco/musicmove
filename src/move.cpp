@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <cerrno>
 
 #include <config.h>
 
@@ -227,7 +228,29 @@ move_results move_file(const fs::path &file, const context &ctx)
     {
         // Ensure parent directory path exists before renaming
         fs::create_directories(new_file.parent_path());
-        fs::rename(file, new_file);
+        
+        // The rename call might fail if the old and new file reside on
+        // different devices.  Look out for that situation
+        try
+        {
+            fs::rename(file, new_file);
+        }
+        catch (fs::filesystem_error &e)
+        {
+            // Check for cross-device issue
+            if (e.code().category() == boost::system::system_category() &&
+                e.code().value() == EXDEV /* code 18 */)
+            {
+                // Copy and remove instead
+                fs::copy_file(file, new_file);
+                fs::remove(file);
+            }
+            else
+            {
+                // It wasn't a cross-device issue, so rethrow
+                std::rethrow_exception(std::current_exception());
+            }
+        }
     }
 
     return results;
