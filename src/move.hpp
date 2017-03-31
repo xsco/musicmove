@@ -27,10 +27,14 @@ namespace mm {
 
 struct process_results
 {
+    process_results() :
+        files_processed{0}, dirs_processed{0}, moved_out_of_parent_dir{false}
+    {}
+
     int files_processed;
     int dirs_processed;
     // Was the path moved "out" of its current parent path?
-    bool moved_out;
+    bool moved_out_of_parent_dir;
 };
 
 process_results process_path(const boost::filesystem::path &path,
@@ -45,12 +49,17 @@ struct path_uniqueness_violation : std::runtime_error
 
 struct move_results
 {
+    move_results() :
+        filename_changed{false}, dir_changed{false},
+        moved_out_of_parent_dir{false}
+    {}
+
     // Was a file renamed within the same dir?
     bool filename_changed;
     // Was a file moved to a different dir?
     bool dir_changed;
     // Was a file moved "out" of its current parent?
-    bool moved_out_of_dir;
+    bool moved_out_of_parent_dir;
 };
 
 move_results move_file(const boost::filesystem::path &file,

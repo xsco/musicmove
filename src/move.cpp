@@ -43,9 +43,6 @@ using std::for_each;
 process_results process_path(const fs::path &p, const mm::context &ctx)
 {
     process_results results;
-    results.files_processed = 0;
-    results.dirs_processed = 0;
-    results.moved_out = false;
     
     if (!fs::exists(p))
     {
@@ -81,7 +78,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
                 auto sub_results = process_path(sub_path, ctx);
                 results.files_processed += sub_results.files_processed;
                 results.dirs_processed += sub_results.dirs_processed;
-                if (sub_results.moved_out)
+                if (sub_results.moved_out_of_parent_dir)
                     --dir_entry_count;
             });
         
@@ -106,7 +103,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
                     if (ctx.verbose)
                         cout << "empty" << endl;
                     fs::remove_all(p);
-                    results.moved_out = true;
+                    results.moved_out_of_parent_dir = true;
                 }
                 else
                 {
@@ -122,8 +119,7 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         auto file_results = move_file(p, ctx);
         // Update results for the path
         ++results.files_processed;
-        if (file_results.moved_out_of_dir)
-            results.moved_out = true;
+        results.moved_out_of_parent_dir = file_results.moved_out_of_parent_dir;
     }
     
     return results;
@@ -153,9 +149,6 @@ static bool path_contains(const fs::path &parent, const fs::path &child)
 move_results move_file(const fs::path &file, const context &ctx)
 {
     move_results results;
-    results.filename_changed = false;
-    results.dir_changed = false;
-
     metadata tag{file};
     
     // Does this file have a tag?
@@ -211,7 +204,7 @@ move_results move_file(const fs::path &file, const context &ctx)
     if (file.parent_path() != new_file.parent_path())
     {
         results.dir_changed = true;
-        results.moved_out_of_dir =
+        results.moved_out_of_parent_dir =
             !path_contains(file.parent_path(), new_file.parent_path());
     }
     if (file.filename() != new_file.filename())

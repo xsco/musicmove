@@ -31,6 +31,12 @@ enum class path_conversion_t { posix, utf8, windows_ascii };
 
 struct context
 {
+    context() :
+        format{}, simulate{true}, verbose{false},
+        path_uniqueness{path_uniqueness_t::skip},
+        path_conversion{path_conversion_t::windows_ascii}
+    {}
+
     std::string format;
     bool simulate;
     bool verbose;

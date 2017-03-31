@@ -95,16 +95,16 @@ BOOST_AUTO_TEST_CASE (rename_file_same_dir)
     // Check results
     BOOST_CHECK_EQUAL(results1.filename_changed, true);
     BOOST_CHECK_EQUAL(results1.dir_changed, false);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(results2.filename_changed, true);
     BOOST_CHECK_EQUAL(results2.dir_changed, false);
-    BOOST_CHECK_EQUAL(results2.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results2.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(results3.filename_changed, true);
     BOOST_CHECK_EQUAL(results3.dir_changed, false);
-    BOOST_CHECK_EQUAL(results3.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results3.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(results4.filename_changed, true);
     BOOST_CHECK_EQUAL(results4.dir_changed, false);
-    BOOST_CHECK_EQUAL(results4.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results4.moved_out_of_parent_dir, false);
     
     // Check situation on disk
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE (rename_file_same_dir_clash)
     auto results1 = mm::move_file(s1, ctx);
     BOOST_CHECK_EQUAL(results1.filename_changed, true);
     BOOST_CHECK_EQUAL(results1.dir_changed, false);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
     BOOST_CHECK_EQUAL(fs::exists(d1), true);
     
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE (rename_file_same_dir_clash)
     auto results2 = mm::move_file(s2, ctx);
     BOOST_CHECK_EQUAL(results2.filename_changed, false);
     BOOST_CHECK_EQUAL(results2.dir_changed, false);
-    BOOST_CHECK_EQUAL(results2.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results2.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(fs::exists(s2), true); // Should still exist
     BOOST_CHECK_EQUAL(fs::exists(d1), true); // Should still exist
     
@@ -197,16 +197,16 @@ BOOST_AUTO_TEST_CASE (move_file_new_dir_diff_hier_sideways)
     // Check results
     BOOST_CHECK_EQUAL(results1.filename_changed, true);
     BOOST_CHECK_EQUAL(results1.dir_changed, true);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(results2.filename_changed, true);
     BOOST_CHECK_EQUAL(results2.dir_changed, true);
-    BOOST_CHECK_EQUAL(results2.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results2.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(results3.filename_changed, true);
     BOOST_CHECK_EQUAL(results3.dir_changed, true);
-    BOOST_CHECK_EQUAL(results3.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results3.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(results4.filename_changed, true);
     BOOST_CHECK_EQUAL(results4.dir_changed, true);
-    BOOST_CHECK_EQUAL(results4.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results4.moved_out_of_parent_dir, true);
     
     // Check situation on disk
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
@@ -259,16 +259,16 @@ BOOST_AUTO_TEST_CASE (move_file_new_dir_diff_hier_upwards)
     // Check results
     BOOST_CHECK_EQUAL(results1.filename_changed, true);
     BOOST_CHECK_EQUAL(results1.dir_changed, true);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(results2.filename_changed, true);
     BOOST_CHECK_EQUAL(results2.dir_changed, true);
-    BOOST_CHECK_EQUAL(results2.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results2.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(results3.filename_changed, true);
     BOOST_CHECK_EQUAL(results3.dir_changed, true);
-    BOOST_CHECK_EQUAL(results3.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results3.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(results4.filename_changed, true);
     BOOST_CHECK_EQUAL(results4.dir_changed, true);
-    BOOST_CHECK_EQUAL(results4.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results4.moved_out_of_parent_dir, true);
     
     // Check situation on disk
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE (move_file_new_dir_diff_hier_clash)
     auto results1 = mm::move_file(s1, ctx);
     BOOST_CHECK_EQUAL(results1.filename_changed, true);
     BOOST_CHECK_EQUAL(results1.dir_changed, true);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, true);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, true);
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
     BOOST_CHECK_EQUAL(fs::exists(d1), true);
     
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE (move_file_new_dir_diff_hier_clash)
     auto results2 = mm::move_file(s2, ctx);
     BOOST_CHECK_EQUAL(results2.filename_changed, false);
     BOOST_CHECK_EQUAL(results2.dir_changed, false);
-    BOOST_CHECK_EQUAL(results2.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results2.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(fs::exists(s2), true); // Should still exist
     BOOST_CHECK_EQUAL(fs::exists(d1), true); // Should still exist
 }
@@ -365,16 +365,16 @@ BOOST_AUTO_TEST_CASE (move_file_new_dir_same_hier)
     // Check results
     BOOST_CHECK_EQUAL(results1.filename_changed, true);
     BOOST_CHECK_EQUAL(results1.dir_changed, true);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(results2.filename_changed, true);
     BOOST_CHECK_EQUAL(results2.dir_changed, true);
-    BOOST_CHECK_EQUAL(results2.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results2.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(results3.filename_changed, true);
     BOOST_CHECK_EQUAL(results3.dir_changed, true);
-    BOOST_CHECK_EQUAL(results3.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results3.moved_out_of_parent_dir, false);
     BOOST_CHECK_EQUAL(results4.filename_changed, true);
     BOOST_CHECK_EQUAL(results4.dir_changed, true);
-    BOOST_CHECK_EQUAL(results4.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results4.moved_out_of_parent_dir, false);
     
     // Check situation on disk
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE (move_file_not_music)
     // Check results
     BOOST_CHECK_EQUAL(results1.filename_changed, false);
     BOOST_CHECK_EQUAL(results1.dir_changed, false);
-    BOOST_CHECK_EQUAL(results1.moved_out_of_dir, false);
+    BOOST_CHECK_EQUAL(results1.moved_out_of_parent_dir, false);
 }
 
 BOOST_AUTO_TEST_CASE (process_path_flat_rename)
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_CASE (process_path_flat_rename)
     // Check results
     BOOST_CHECK_EQUAL(results.files_processed, 4);
     BOOST_CHECK_EQUAL(results.dirs_processed, 1);
-    BOOST_CHECK_EQUAL(results.moved_out, false);
+    BOOST_CHECK_EQUAL(results.moved_out_of_parent_dir, false);
     
     // Check situation on disk
     BOOST_CHECK_EQUAL(fs::exists(s1), false);
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE (process_path_flat_move_out)
     // Check results
     BOOST_CHECK_EQUAL(results.files_processed, 4);
     BOOST_CHECK_EQUAL(results.dirs_processed, 1);
-    BOOST_CHECK_EQUAL(results.moved_out, true);
+    BOOST_CHECK_EQUAL(results.moved_out_of_parent_dir, true);
     
     // Check situation on disk
     // Empty start_dir should have been removed
@@ -546,7 +546,7 @@ BOOST_AUTO_TEST_CASE (process_path_nested_move_out_sideways)
     // Check results
     BOOST_CHECK_EQUAL(results.files_processed, 4);
     BOOST_CHECK_EQUAL(results.dirs_processed, 2);
-    BOOST_CHECK_EQUAL(results.moved_out, false);
+    BOOST_CHECK_EQUAL(results.moved_out_of_parent_dir, false);
     
     // Check situation on disk
     // Empty hier1 dir should have been removed
