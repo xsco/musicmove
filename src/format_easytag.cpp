@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <regex>
 #include <stdexcept>
 
 namespace fs = boost::filesystem;
@@ -134,9 +135,29 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
         }
     
         auto c = format[found];
-        // Decode the token and append to the path
-        new_path_str.append(
-            convert_for_filesystem(get_token_easytag(tag, c), ctx));
+        // Decode the token, make sure it doesn't contain any path separator
+        // characters, and append to the path
+        new_path_str.append(std::regex_replace(
+            get_token_easytag(tag, c), std::regex{"[/\\\\]"}, "-"));
+    }
+    
+    // Construct the path, and make sure each element is suitable for writing
+    // to the filesystem
+    fs::path unconverted_path{new_path_str};
+    fs::path new_path;
+    for (auto &path_elem : unconverted_path)
+    {
+        if (path_elem.is_absolute())
+        {
+            // Ensure the root path is at the beginning of the path
+            new_path = path_elem.root_path();
+            new_path /= path_elem.relative_path();
+        }
+        else
+        {
+            // Append
+            new_path /= convert_for_filesystem(path_elem.string(), ctx);
+        }
     }
     
     // Work out the full path for the renamed file.
@@ -144,7 +165,6 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
     // dir; if the format specifies a relative path, it is relative to the
     // file's current directory (apart from dot and dot-dot); if the format
     // specifies an absolute path, then it is used as-is.
-    fs::path new_path{new_path_str};
     if (new_path.is_relative())
     {
         // Do we have a relative dir specifier like dot or dot-dot?

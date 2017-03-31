@@ -82,7 +82,6 @@ string convert_for_filesystem(const string &str, const context &ctx)
         std::regex windows_exp{"[<>:\"/\\\\\\|\\?\\*]"};
         safe = std::regex_replace(safe, windows_exp, "_");
         
-        // Windows does not allow dot to be the last character
         if (!safe.empty() && safe[safe.size() - 1] == '.')
             safe = safe.substr(0, safe.size() - 1);
     }
