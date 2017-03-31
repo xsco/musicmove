@@ -217,6 +217,11 @@ BOOST_AUTO_TEST_CASE(path_conversion_windows)
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "xyzw<>:\"|", ctx),
         "xyzw");
+    
+    // Paths ending with a dot should have it stripped
+    BOOST_CHECK_EQUAL(convert_for_filesystem(
+        "Ends with an A.B.C.", ctx),
+        "Ends with an A.B.C");
 
     // Accented characters (in UTF-8) should be converted to non-accented
     // 7-bit equivalents; anything else to underscore
