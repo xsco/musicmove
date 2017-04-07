@@ -23,7 +23,13 @@
 #include <iostream>
 #include <string>
 
+#define STRINGIFY(x) STRINGIFY_(x)
+#define STRINGIFY_(x) #x
+
+namespace fs = boost::filesystem;
 using namespace std;
+
+const string testdata_dir_str = STRINGIFY(TESTDATA_DIR) "/format";
 
 BOOST_AUTO_TEST_CASE (path_conversion_posix)
 {
@@ -251,4 +257,37 @@ BOOST_AUTO_TEST_CASE(path_conversion_windows)
         "Latin-1 Supplement, some of: "
         "\u0179\u017a\u017b\u017c\u017d\u017e\u017f", ctx),
         "Latin-1 Supplement, some of_ ");
+}
+
+BOOST_AUTO_TEST_CASE (easytag_format)
+{
+    mm::context ctx;
+    fs::path file{testdata_dir_str + "/foo.txt"};
+    BOOST_CHECK(fs::exists(file));
+    mm::metadata tag{file};
+
+    // Note that these test rely on the behaviour of the mock metadata class
+    // to return fixed strings for specific fields
+    
+    // Absolute path formatting
+    BOOST_CHECK_EQUAL(
+        mm::format_path_easytag(file,
+            "/foo/%a",
+            tag, ctx).string(),
+        "/foo/artist.txt");
+    BOOST_CHECK_EQUAL(
+        mm::format_path_easytag(file,
+            "/foo/%b",
+            tag, ctx).string(),
+        "/foo/album.txt");
+    BOOST_CHECK_EQUAL(
+        mm::format_path_easytag(file,
+            "/foo/%z",
+            tag, ctx).string(),
+        "/foo/albumartist.txt");
+    BOOST_CHECK_EQUAL(
+        mm::format_path_easytag(file,
+            "/foo/%g/%z/%b/%d%n-%a-%t",
+            tag, ctx).string(),
+        "/foo/genre/albumartist/album/discnumbertracknumber-artist-title.txt");
 }

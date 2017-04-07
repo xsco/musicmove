@@ -61,23 +61,23 @@ void metadata::print_properties(std::ostream &os)
     // MOCK - do nothing
 }
 
-// MOCK - return empty string for all tags
+// MOCK - return a fixed string for all tags
 bool   metadata::has_tag()         const { return impl_->has_tag(); }
-string metadata::album()           const { return ""; }
-string metadata::album_artist()    const { return ""; }
-string metadata::artist()          const { return ""; }
-string metadata::comment()         const { return ""; }
-string metadata::composer()        const { return ""; }
-string metadata::copyright()       const { return ""; }
-string metadata::encoded_by()      const { return ""; }
-string metadata::date()            const { return ""; }
-string metadata::disc_number()     const { return ""; }
-string metadata::disc_total()      const { return ""; }
-string metadata::genre()           const { return ""; }
-string metadata::original_artist() const { return ""; }
-string metadata::title()           const { return ""; }
-string metadata::track_number()    const { return ""; }
-string metadata::track_total()     const { return ""; }
-string metadata::url()             const { return ""; }
+string metadata::album()           const { return "album"; }
+string metadata::album_artist()    const { return "albumartist"; }
+string metadata::artist()          const { return "artist"; }
+string metadata::comment()         const { return "comment"; }
+string metadata::composer()        const { return "composer"; }
+string metadata::copyright()       const { return "copyright"; }
+string metadata::encoded_by()      const { return "encodedby"; }
+string metadata::date()            const { return "date"; }
+string metadata::disc_number()     const { return "discnumber"; }
+string metadata::disc_total()      const { return "disctotal"; }
+string metadata::genre()           const { return "genre"; }
+string metadata::original_artist() const { return "originalartist"; }
+string metadata::title()           const { return "title"; }
+string metadata::track_number()    const { return "tracknumber"; }
+string metadata::track_total()     const { return "tracktotal"; }
+string metadata::url()             const { return "url"; }
 
 } // namespace mm

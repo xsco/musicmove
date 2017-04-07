@@ -112,6 +112,10 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
                         cout << "not empty" << endl;
                 }
             }
+            else
+            {
+                cout << endl;
+            }
         }
     }
     else
@@ -218,7 +222,7 @@ move_results move_file(const fs::path &file, const context &ctx)
                  << " to " << new_file.string() << endl;
         else if (results.dir_changed)
             cout << "Move " << file.string()
-                 << " to " << new_file.parent_path().string() << endl;
+                 << " to " << new_file.string() << endl;
         else
             cout << "Rename " << file.string()
                  << " to " << new_file.filename().string() << endl;

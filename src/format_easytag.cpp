@@ -99,6 +99,7 @@ static string get_token_easytag(const metadata &tag, const char c)
             val = tag.album_artist();
             if (val == "")
                 return tag.artist();
+            return val;
         case '%':
             // It's an actual percentage sign in the filename!
             return "%";
@@ -156,7 +157,8 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
         else
         {
             // Append
-            new_path /= convert_for_filesystem(path_elem.string(), ctx);
+            auto part = convert_for_filesystem(path_elem.string(), ctx);
+            new_path /= part;
         }
     }
     

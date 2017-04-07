@@ -58,7 +58,8 @@ metadata_test_LDADD = \
 # Format test
 format_test_SOURCES = \
 	format_test.cpp \
-	format.cpp format.hpp
+	metadata_mock.cpp \
+	format.cpp format_easytag.cpp format.hpp
 format_test_CPPFLAGS = \
 	-Werror -Wall \
 	-DTESTDATA_DIR="../testdata"
