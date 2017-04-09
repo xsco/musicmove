@@ -41,13 +41,16 @@ using std::exception;
 
 static void print_usage(std::ostream &os, const po::options_description &od)
 {
-    os << "Usage:"
+    os << PACKAGE_STRING " - Bulk renamer for music files"
        << endl
-       << PACKAGE " command --format=str [--base-dir=path] path1 [path2..]"
+       << endl
+       << "Usage: " << PACKAGE " --format=str path1 [path2..]"
+       << endl
        << endl
        << od
        << endl
        << "Report bugs to: " PACKAGE_BUGREPORT
+       << endl
        << endl
        << PACKAGE " home page: <http://musicmove.xsco.org>"
        << endl;
@@ -55,7 +58,7 @@ static void print_usage(std::ostream &os, const po::options_description &od)
 
 static void print_version(std::ostream &os)
 {
-    os << PACKAGE_STRING
+    os << PACKAGE_STRING " - Bulk renamer for music files"
        << endl
        << endl
        << "Copyright (C) 2017 Adam Szmigin (adam.szmigin@xsco.net)"
@@ -87,7 +90,15 @@ int main(int argc, char *argv[])
     po::options_description od_visible("Allowed options");
     od_visible.add_options()
         ("format", po::value<string>(),
-            "The file path format string.")
+            "The file path format string.  The syntax is a file path, but "
+            "certain tokens are replaced with values from each file's "
+            "metadata.  `%a' for artist, `%b' for album, `%c' for comment, "
+            "`%d' for disc number, `%e' for encoded by, `%g' for genre, `%l' "
+            "for track total, `%n' for track number (zero-padded to two "
+            "characters), `%o' for original artist, `%p' for composer, `%r' "
+            "for copyright, `%t' for title, `%u' for URL, `%x' for disc "
+            "total, `%y' for year, `%z' for album artist (falling back to "
+            "artist if not set), or `%%' for a literal percent sign.")
         ("simulate,s", po::bool_switch(),
             "Simulate renaming, i.e. don't commit any changes to disk. "
             "This is the default.")
@@ -96,15 +107,15 @@ int main(int argc, char *argv[])
             "will need to use this switch to explicitly tell the program that "
             "you actually want it to rename files.")
         ("path-conversion", po::value<string>(),
-            "Approach for converting meta-data characters into paths "
-            "(the default is `" PATH_CONVERSION_DEFAULT_VALUE "').\n"
+            "Approach for converting meta-data characters into paths.\n"
             "`windows-ascii' converts to 7-bit ASCII and removes any "
             "characters not normally permitted on Microsoft Windows machines.\n"
             "`utf-8' uses the full expressivity of UTF-8 Unicode paths, "
             "assuming they are supported by your filesystem.\n"
             "`posix' is a restrictive but portable approach that permits only "
             "unaccented letters (of either case), numbers, dot, underscore, "
-            "and hyphen.")
+            "and hyphen.\n"
+            "The default is option `" PATH_CONVERSION_DEFAULT_VALUE "'.\n")
         ("exit-on-duplicate", po::bool_switch(),
             "Exit if we encounter two files that would be rewritten to the "
             "same path on disk (default is to skip any such duplicates).")

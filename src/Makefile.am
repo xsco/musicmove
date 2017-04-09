@@ -1,3 +1,6 @@
+# Extra stuff to clean
+MOSTLYCLEANFILES = musicmove.1
+
 # Static libraries, not installed
 noinst_LIBRARIES = libmusicmove.a
 
@@ -35,6 +38,16 @@ musicmove_LDADD = \
 	$(BOOST_FILESYSTEM_LDADD) \
 	$(BOOST_LOCALE_LDADD) \
 	$(TAGLIB_LDADD)
+
+# Make the man page using help2man
+man_MANS = musicmove.1
+musicmove.1: musicmove.cpp
+	$(HELP2MAN) \
+		--output=$@ \
+		--name="Bulk renamer for music files" \
+		--version-string="$(PACKAGE_VERSION)" \
+	    --no-info \
+	    ./musicmove
 
 
 # Unit test programs

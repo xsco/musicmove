@@ -1,4 +1,4 @@
-AC_INIT([musicmove bulk renamer for music files], [0.0.1], [bugs@xsco.org], [musicmove])
+AC_INIT([musicmove], [0.0.1], [bugs@xsco.org], [musicmove])
 AM_SILENT_RULES([yes])
 AM_INIT_AUTOMAKE([-Wall])
 
@@ -11,6 +11,12 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AM_PROG_AR
 AC_SUBST([ARFLAGS], [cr])
+
+AC_PATH_PROG(HELP2MAN, help2man, no)
+if test x"${HELP2MAN}" == x"no"; then
+    AC_MSG_ERROR([`help2man' not found in path.  Please install help2man \
+before trying to build ${PACKAGE}.])
+fi
 
 # Require C++14
 AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])
