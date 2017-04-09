@@ -47,5 +47,5 @@ dependencies are missing.
 Usage
 -----
 
-Refer to the [online manual](http://musicmove.xsco.org/manual) for information
+Refer to the [online manual](http://musicmove.xsco.org/docs) for information
 on how to use musicmove.

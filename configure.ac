@@ -17,6 +17,11 @@ if test x"${HELP2MAN}" == x"no"; then
     AC_MSG_ERROR([`help2man' not found in path.  Please install help2man \
 before trying to build ${PACKAGE}.])
 fi
+AC_PATH_PROG(MAN2HTML, man2html, no)
+if test x"${MAN2HTML}" == x"no"; then
+	AC_MSG_ERROR([`man2html' not found in path.  Please install man2html \
+before trying to build ${PACKAGE}.])
+fi
 
 # Require C++14
 AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])

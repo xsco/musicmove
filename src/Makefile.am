@@ -1,5 +1,5 @@
 # Extra stuff to clean
-MOSTLYCLEANFILES = musicmove.1
+MOSTLYCLEANFILES = musicmove.1 musicmove.html
 
 # Static libraries, not installed
 noinst_LIBRARIES = libmusicmove.a
@@ -41,13 +41,18 @@ musicmove_LDADD = \
 
 # Make the man page using help2man
 man_MANS = musicmove.1
-musicmove.1: musicmove.cpp
+musicmove.1 : musicmove.cpp
 	$(HELP2MAN) \
 		--output=$@ \
 		--name="Bulk renamer for music files" \
 		--version-string="$(PACKAGE_VERSION)" \
 	    --no-info \
 	    ./musicmove
+# Make html version of manual
+.PHONY : html-local
+html-local : musicmove.html
+musicmove.html : musicmove.1
+	$(MAN2HTML) -r $< | tail --lines=+3 > $@
 
 
 # Unit test programs
