@@ -20,7 +20,6 @@
 
 #include "metadata.hpp"
 
-#include <mpegfile.h>
 #include <algorithm>
 
 namespace fs = boost::filesystem;
@@ -31,13 +30,10 @@ class metadata::mpeg_impl : public metadata::base_impl
 {
 public:
     mpeg_impl(const fs::path &path) :
-        file_{path.c_str()}
+        base_impl{path}
     {}
     ~mpeg_impl() {}
 
-    virtual bool has_tag() const { return file_.hasID3v2Tag() ||
-                                          file_.hasID3v1Tag() ||
-                                          file_.hasAPETag(); }
     virtual std::string disc_number() const
     {
         auto val = base_impl::disc_number();
@@ -84,12 +80,6 @@ public:
         return val;
     }
     virtual std::string url() const { return get_prop("URL"); }
-
-protected:
-    const TagLib::PropertyMap properties() const { return file_.properties(); }
-    
-private:
-    TagLib::MPEG::File file_;
 };
 
 } // namespace mm

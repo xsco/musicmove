@@ -20,7 +20,6 @@
 
 #include "metadata.hpp"
 
-#include <flacfile.h>
 #include <algorithm>
 
 namespace fs = boost::filesystem;
@@ -31,13 +30,10 @@ class metadata::flac_impl : public metadata::base_impl
 {
 public:
     flac_impl(const fs::path &path) :
-        file_{path.c_str()}
+        base_impl{path}
     {}
     ~flac_impl() {}
     
-    virtual bool has_tag() const { return file_.hasXiphComment() ||
-                                          file_.hasID3v2Tag() ||
-                                          file_.hasID3v1Tag(); }
     virtual std::string comment() const { return get_prop("DESCRIPTION"); }
     virtual std::string encoded_by() const { return get_prop("ENCODED-BY"); }
     virtual std::string track_number() const
@@ -54,12 +50,6 @@ public:
         val.erase(0, std::min(val.find_first_not_of('0'), val.size()-1));
         return val;
     }
-
-protected:
-    const TagLib::PropertyMap properties() const { return file_.properties(); }
-    
-private:
-    TagLib::FLAC::File file_;
 };
 
 } // namespace mm

@@ -33,18 +33,18 @@ class metadata::mp4_impl : public metadata::base_impl
 {
 public:
     mp4_impl(const fs::path &path) :
-        file_{path.c_str()}
+        base_impl{path}
     {}
     ~mp4_impl() {}
     
-    virtual bool has_tag() const { return file_.tag() != nullptr; }
     virtual std::string album_artist() const
     {
         // Expect album artist stored as a duplicate artist tag, but for
         // some reason is only accessible directly via the "aART" atom.
         if (!has_tag())
             return "";
-        auto &item_map = file_.tag()->itemListMap();
+        auto *f = dynamic_cast<const TagLib::MP4::File *>(file_ptr());
+        auto &item_map = f->tag()->itemListMap();
         if (!item_map.contains("aART"))
             return "";
         auto list = item_map["aART"].toStringList();
@@ -92,15 +92,6 @@ public:
             val = "";
         return val;
     }
-
-protected:
-    const TagLib::PropertyMap properties() const
-    {
-        return file_.properties();
-    }
-    
-private:
-    TagLib::MP4::File file_;
 };
 
 } // namespace mm

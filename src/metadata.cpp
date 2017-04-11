@@ -35,9 +35,6 @@ namespace mm {
 
 using std::string;
 
-// TODO - make this facade for "popular tag conventions" concept separate, maybe release as overlay for taglib
-// Call taglib-conventions?
-
 std::unique_ptr<metadata::base_impl> metadata::make_impl(const fs::path &path)
 {
     // Select metadata impl based on file extension (assume lowercase ASCII)

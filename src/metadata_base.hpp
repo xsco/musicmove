@@ -21,17 +21,25 @@
 #include "metadata.hpp"
 
 #include <tpropertymap.h>
+#include <tfile.h>
+#include <fileref.h>
 #include <ostream>
+
+namespace fs = boost::filesystem;
 
 namespace mm {
 
 class metadata::base_impl
 {
 public:
-    base_impl() {}
+    base_impl(const fs::path &path) :
+        file_ref_{path.string().c_str()},
+        file_ptr_{file_ref_.file()}
+    {}
     virtual ~base_impl() {}
     
-    virtual bool has_tag() const = 0;
+    bool has_tag() const { return file_ptr_->tag() != nullptr; }
+    
     virtual std::string album()           const { return get_prop("ALBUM"); }
     virtual std::string album_artist()    const { return get_prop("ALBUMARTIST"); }
     virtual std::string artist()          const { return get_prop("ARTIST"); }
@@ -61,9 +69,12 @@ public:
     }
 
 protected:
-    virtual const TagLib::PropertyMap properties() const = 0;
+    const TagLib::PropertyMap properties() const
+    {
+        return file_ptr_->properties();
+    }
 
-    virtual std::string get_prop(const char *name, size_t index = 0) const
+    std::string get_prop(const char *name, size_t index = 0) const
     {
         auto vals = properties()[name];
         if (vals.isEmpty())
@@ -74,6 +85,12 @@ protected:
         // Get UTF-8 encoding of the property value
         return val.to8Bit(true);
     }
+    
+    const TagLib::File *file_ptr() const { return file_ptr_; }
+    
+private:
+    TagLib::FileRef file_ref_;
+    TagLib::File *file_ptr_;
 };
 
 } // namespace mm
