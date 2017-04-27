@@ -99,6 +99,11 @@ int main(int argc, char *argv[])
             "for copyright, `%t' for title, `%u' for URL, `%x' for disc "
             "total, `%y' for year, `%z' for album artist (falling back to "
             "artist if not set), or `%%' for a literal percent sign.")
+        ("format-script", po::value<string>(),
+            "Path to a file that contains ChaiScript code which can be used "
+            "to move/rename files in different ways.  Variables for path, "
+            "filename, and the normal tags will be defined when the script "
+            "runs.")
         ("simulate,s", po::bool_switch(),
             "Simulate renaming, i.e. don't commit any changes to disk. "
             "This is the default.")
@@ -173,9 +178,9 @@ int main(int argc, char *argv[])
     
     // TODO - implement ChaiScript option to return a format string
     // Do we have a format specified?
-    if (vm.count("format") <= 0)
+    if (vm.count("format") <= 0 && vm.count("format-script"))
     {
-        cerr << "No format string specified" << endl;
+        cerr << "No format string or script specified" << endl;
         cerr << "Run `" PACKAGE " --help' for information on usage" << endl;
         return 1;
     }
@@ -191,7 +196,16 @@ int main(int argc, char *argv[])
     
     // Form context struct
     mm::context ctx;
-    ctx.format = vm["format"].as<string>();
+    if (vm.count("format-script") > 0)
+    {
+        ctx.use_format_script = true;
+        ctx.format_script = vm["format-script"].as<string>();
+    }
+    else
+    {
+        ctx.use_format_script = false;
+        ctx.format = vm["format"].as<string>();
+    }
     ctx.simulate = !vm["for-real"].as<bool>();
     ctx.verbose = vm["verbose"].as<bool>();
     ctx.path_uniqueness = vm.count("exit-on-duplicate") <= 0

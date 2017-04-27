@@ -1,5 +1,5 @@
-AC_INIT([musicmove], [1.0.0], [bugs@xsco.org], [musicmove])
-AM_SILENT_RULES([yes])
+AC_INIT([musicmove], [1.1.0], [bugs@xsco.org], [musicmove])
+#AM_SILENT_RULES([yes])
 AM_INIT_AUTOMAKE([-Wall])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -36,7 +36,7 @@ AC_CHECK_HEADERS([boost/locale.hpp], [],
 AC_CHECK_HEADERS([boost/test/unit_test.hpp], [],
     [AC_MSG_ERROR([couldn't find boost/test/unit_test.hpp])])
 PKG_CHECK_MODULES([TAGLIB], [taglib])
-#PKG_CHECK_MODULES([CHAISCRIPT], [chaiscript])
+PKG_CHECK_MODULES([CHAISCRIPT], [chaiscript])
 
 # Library names.
 AC_SUBST([BOOST_SYSTEM_LDADD], [-lboost_system])
@@ -44,6 +44,7 @@ AC_SUBST([BOOST_PROGRAM_OPTIONS_LDADD], [-lboost_program_options])
 AC_SUBST([BOOST_FILESYSTEM_LDADD], [-lboost_filesystem])
 AC_SUBST([BOOST_LOCALE_LDADD], [-lboost_locale])
 AC_SUBST([TAGLIB_LDADD], [$TAGLIB_LIBS])
+AC_SUBST([CHAISCRIPT_LDADD], [-lpthread])
 AC_SUBST([BOOST_UTF_LDADD], [-lboost_unit_test_framework])
 
 # Path conversion default, which may be OS-specific one day.

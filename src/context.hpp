@@ -37,7 +37,9 @@ struct context
         path_conversion{path_conversion_t::windows_ascii}
     {}
 
+    bool use_format_script;
     std::string format;
+    fs::path format_script;
     bool simulate;
     bool verbose;
     path_uniqueness_t path_uniqueness;

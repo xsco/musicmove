@@ -170,7 +170,11 @@ move_results move_file(const fs::path &file, const context &ctx)
         cout << "Properties for " << file.string() << endl;
         tag.print_properties(cout);
     }
-    auto new_file = format_path_easytag(file, ctx.format, tag, ctx);
+    // Format the file, according to either string or script
+    auto format = ctx.use_format_script
+        ? get_format_from_script(file, tag, ctx)
+        : ctx.format;
+    auto new_file = format_path_easytag(file, format, tag, ctx);
     
     // See if the new path is actually any different
     if (new_file == file)

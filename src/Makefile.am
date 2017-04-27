@@ -10,13 +10,14 @@ libmusicmove_a_SOURCES = \
 	metadata.cpp metadata.hpp metadata_base.hpp \
 	metadata_flac.hpp metadata_mp4.hpp \
 	metadata_mpeg.hpp metadata_ogg_vorbis.hpp \
-	format.cpp format_easytag.cpp format.hpp \
+	format.cpp format_easytag.cpp format_script.cpp format.hpp \
 	move.cpp move.hpp
 
 # Compiler flags.
 libmusicmove_a_CPPFLAGS = \
 	-Werror -Wall \
-	$(TAGLIB_CFLAGS)
+	$(TAGLIB_CFLAGS) \
+	$(CHAISCRIPT_CFLAGS)
 
 
 # Programs
@@ -37,7 +38,8 @@ musicmove_LDADD = \
 	$(BOOST_PROGRAM_OPTIONS_LDADD) \
 	$(BOOST_FILESYSTEM_LDADD) \
 	$(BOOST_LOCALE_LDADD) \
-	$(TAGLIB_LDADD)
+	$(TAGLIB_LDADD) \
+	$(CHAISCRIPT_LDADD) -ldl
 
 # Make the man page using help2man
 man_MANS = musicmove.1
