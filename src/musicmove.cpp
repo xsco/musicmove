@@ -101,9 +101,11 @@ int main(int argc, char *argv[])
             "artist if not set), or `%%' for a literal percent sign.")
         ("format-script", po::value<string>(),
             "Path to a file that contains ChaiScript code which can be used "
-            "to move/rename files in different ways.  Variables for path, "
-            "filename, and the normal tags will be defined when the script "
-            "runs.")
+            "to move/rename files in different ways.  Constant variables for "
+            "path, filename, and the normal tags will be defined when the "
+            "script runs.  The ChaiScript code must return the new file path "
+            "to work.  If the code returns tokens like `%a' etc, then they "
+            "will be expanded as usual.")
         ("simulate,s", po::bool_switch(),
             "Simulate renaming, i.e. don't commit any changes to disk. "
             "This is the default.")

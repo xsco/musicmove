@@ -15,11 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "format.hpp"
+#include "script_runner.hpp"
 
 #include <iostream>
-#include <sstream>
-#include <regex>
+#include <fstream>
 #include <stdexcept>
 #include <chaiscript/chaiscript.hpp>
 
@@ -28,14 +27,6 @@ namespace cs = chaiscript;
 
 namespace mm {
 
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
-using std::stringstream;
-using std::for_each;
-
-
 std::string get_format_from_script(
         const fs::path &file,
         const metadata &tag,
@@ -43,6 +34,7 @@ std::string get_format_from_script(
 {
     // Initialise chai
     cs::ChaiScript chai;
+    
     // Add bound members from metadata
     chai.add(cs::fun(&metadata::album, &tag), "album");
     chai.add(cs::fun(&metadata::album_artist, &tag), "album_artist");
@@ -64,8 +56,7 @@ std::string get_format_from_script(
     chai.add(cs::const_var(file.filename().string()), "filename");
     chai.add(cs::const_var(file.parent_path().string()), "parent_dir");
 
-    // TODO - not implemented yet!
-    return chai.eval<std::string>("return \"%z/%b/%n - %a - %t\"");
+    return chai.eval_file<std::string>(ctx.format_script.string());
 }
 
 

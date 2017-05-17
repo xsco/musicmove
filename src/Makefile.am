@@ -2,7 +2,16 @@
 MOSTLYCLEANFILES = musicmove.1 musicmove.html
 
 # Static libraries, not installed
-noinst_LIBRARIES = libmusicmove.a
+noinst_LIBRARIES = libscriptrunner.a libmusicmove.a
+
+libscriptrunner_a_SOURCES = \
+	context.hpp \
+	metadata.hpp \
+	script_runner.cpp script_runner.hpp
+libscriptrunner_a_CPPFLAGS = \
+	-Werror -Wall \
+	$(TAGLIB_CFLAGS) \
+	$(CHAISCRIPT_CFLAGS)
 
 # Source files for the 'library'
 libmusicmove_a_SOURCES = \
@@ -10,7 +19,7 @@ libmusicmove_a_SOURCES = \
 	metadata.cpp metadata.hpp metadata_base.hpp \
 	metadata_flac.hpp metadata_mp4.hpp \
 	metadata_mpeg.hpp metadata_ogg_vorbis.hpp \
-	format.cpp format_easytag.cpp format_script.cpp format.hpp \
+	format.cpp format_easytag.cpp format.hpp \
 	move.cpp move.hpp
 
 # Compiler flags.
@@ -34,6 +43,7 @@ musicmove_CPPFLAGS = \
 # Additional libraries for the linker.
 musicmove_LDADD = \
 	libmusicmove.a \
+	libscriptrunner.a \
 	$(BOOST_SYSTEM_LDADD) \
 	$(BOOST_PROGRAM_OPTIONS_LDADD) \
 	$(BOOST_FILESYSTEM_LDADD) \
@@ -58,7 +68,7 @@ musicmove.html : musicmove.1
 
 
 # Unit test programs
-check_PROGRAMS = metadata_test format_test move_test
+check_PROGRAMS = metadata_test format_test script_runner_test move_test
 TESTS = $(check_PROGRAMS)
 
 # Metadata test
@@ -89,6 +99,21 @@ format_test_LDADD = \
 	$(BOOST_LOCALE_LDADD) \
 	$(BOOST_UTF_LDADD)
 
+# Script runner test
+script_runner_test_SOURCES = \
+	script_runner_test.cpp \
+	metadata_mock.cpp
+script_runner_test_CPPFLAGS = \
+	-Werror -Wall \
+	-DTESTDATA_DIR="../testdata"
+script_runner_test_LDADD = \
+	libscriptrunner.a \
+	$(BOOST_SYSTEM_LDADD) \
+	$(BOOST_FILESYSTEM_LDADD) \
+	$(BOOST_LOCALE_LDADD) \
+	$(BOOST_UTF_LDADD) \
+	$(CHAISCRIPT_LDADD) -ldl
+
 # Move test
 move_test_SOURCES = \
 	move_test.cpp \
@@ -99,7 +124,9 @@ move_test_CPPFLAGS = \
 	-Werror -Wall \
 	-DTESTDATA_DIR="../testdata"
 move_test_LDADD = \
+	libscriptrunner.a \
 	$(BOOST_SYSTEM_LDADD) \
 	$(BOOST_FILESYSTEM_LDADD) \
-	$(BOOST_UTF_LDADD)
+	$(BOOST_UTF_LDADD) \
+	$(CHAISCRIPT_LDADD) -ldl
 

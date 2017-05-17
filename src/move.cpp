@@ -28,6 +28,7 @@
 
 #include "metadata.hpp"
 #include "format.hpp"
+#include "script_runner.hpp"
 
 
 namespace fs = boost::filesystem;

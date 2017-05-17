@@ -33,11 +33,6 @@ boost::filesystem::path format_path_easytag(
         const metadata &tag,
         const context &ctx);
 
-std::string get_format_from_script(
-        const boost::filesystem::path &file,
-        const metadata &tag,
-        const context &ctx);
-
 } // namespace mm
 
 #endif // MUSICMOVE_FORMAT_HPP

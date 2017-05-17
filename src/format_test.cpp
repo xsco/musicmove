@@ -291,3 +291,4 @@ BOOST_AUTO_TEST_CASE (easytag_format)
             tag, ctx).string(),
         "/foo/genre/albumartist/album/discnumbertracknumber-artist-title.txt");
 }
+

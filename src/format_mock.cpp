@@ -61,4 +61,11 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
     return p;
 }
 
+string get_format_from_script(const fs::path &file,
+                              const metadata &tag, const context &ctx)
+{
+    // MOCK - return a basic format
+    return "%z/%b/%n-%a-%t";
+}
+
 } // namespace mm

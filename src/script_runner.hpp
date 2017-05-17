@@ -15,38 +15,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MUSICMOVE_CONTEXT_HPP
-#define MUSICMOVE_CONTEXT_HPP
+#ifndef MUSICMOVE_SCRIPT_RUNNER_HPP
+#define MUSICMOVE_SCRIPT_RUNNER_HPP
 
-#include <boost/filesystem/path.hpp>
 #include <string>
-
-namespace fs = boost::filesystem;
+#include <boost/filesystem/path.hpp>
+#include "context.hpp"
+#include "metadata.hpp"
 
 namespace mm {
 
-enum class path_uniqueness_t { skip, exit };
-
-enum class path_conversion_t { posix, utf8, windows_ascii };
-
-struct context
-{
-    context() :
-        use_format_script{false}, format{}, format_script{},
-        simulate{true}, verbose{false},
-        path_uniqueness{path_uniqueness_t::skip},
-        path_conversion{path_conversion_t::windows_ascii}
-    {}
-
-    bool use_format_script;
-    std::string format;
-    fs::path format_script;
-    bool simulate;
-    bool verbose;
-    path_uniqueness_t path_uniqueness;
-    path_conversion_t path_conversion;
-};
+std::string get_format_from_script(
+        const boost::filesystem::path &file,
+        const metadata &tag,
+        const context &ctx);
 
 } // namespace mm
 
-#endif // MUSICMOVE_CONTEXT_HPP
+#endif // MUSICMOVE_SCRIPT_RUNNER_HPP

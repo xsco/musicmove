@@ -40,6 +40,7 @@ musicmove requires suitable versions of the following libraries:
 
 * [Boost](http://www.boost.org)
 * [TagLib](http://taglib.org)
+* [ChaiScript](http://chaiscript.com)
 
 The `configure` script should report an error if any of the necessary
 dependencies are missing.
