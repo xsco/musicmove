@@ -36,6 +36,7 @@ std::string get_format_from_script(
     cs::ChaiScript chai;
     
     // Add bound members from metadata
+    // TODO - should any embedded percent % signs be escaped?
     chai.add(cs::fun(&metadata::album, &tag), "album");
     chai.add(cs::fun(&metadata::album_artist, &tag), "album_artist");
     chai.add(cs::fun(&metadata::artist, &tag), "artist");
@@ -52,8 +53,11 @@ std::string get_format_from_script(
     chai.add(cs::fun(&metadata::track_number, &tag), "track_number");
     chai.add(cs::fun(&metadata::track_total, &tag), "track_total");
     chai.add(cs::fun(&metadata::url, &tag), "url");
+    
+    // Add constant variables for the path
     chai.add(cs::const_var(file.string()), "path");
     chai.add(cs::const_var(file.filename().string()), "filename");
+    chai.add(cs::const_var(file.filename().stem().string()), "filename_stem");
     chai.add(cs::const_var(file.parent_path().string()), "parent_dir");
 
     return chai.eval_file<std::string>(ctx.format_script.string());

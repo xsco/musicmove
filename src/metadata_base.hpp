@@ -57,16 +57,33 @@ public:
     virtual std::string track_total()     const { return get_prop("TRACKTOTAL"); }
     virtual std::string url()             const { return get_prop("CONTACT"); }
 
+    #define TEST_AND_PRINT(tagname) \
+        auto tagname ## _val = tagname(); \
+        if (tagname ## _val != "") { \
+            os << #tagname " -> " << tagname ## _val << std::endl; \
+        }
+
     void print_properties(std::ostream &os)
     {
-        for (auto &kvp : properties())
-        {
-            for (auto &val : kvp.second)
-            {
-                os << kvp.first << " -> " << val << std::endl;
-            }
-        }
+        TEST_AND_PRINT(album);
+        TEST_AND_PRINT(album_artist);
+        TEST_AND_PRINT(artist);
+        TEST_AND_PRINT(comment);
+        TEST_AND_PRINT(composer);
+        TEST_AND_PRINT(copyright);
+        TEST_AND_PRINT(encoded_by);
+        TEST_AND_PRINT(date);
+        TEST_AND_PRINT(disc_number);
+        TEST_AND_PRINT(disc_total);
+        TEST_AND_PRINT(genre);
+        TEST_AND_PRINT(original_artist);
+        TEST_AND_PRINT(title);
+        TEST_AND_PRINT(track_number);
+        TEST_AND_PRINT(track_total);
+        TEST_AND_PRINT(url);
     }
+    
+    #undef TEST_AND_PRINT
 
 protected:
     const TagLib::PropertyMap properties() const

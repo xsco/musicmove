@@ -272,6 +272,11 @@ BOOST_AUTO_TEST_CASE (easytag_format)
     // Absolute path formatting
     BOOST_CHECK_EQUAL(
         mm::format_path_easytag(file,
+            "/foo/bar/hardcoded",
+            tag, ctx).string(),
+        "/foo/bar/hardcoded.txt");
+    BOOST_CHECK_EQUAL(
+        mm::format_path_easytag(file,
             "/foo/%a",
             tag, ctx).string(),
         "/foo/artist.txt");

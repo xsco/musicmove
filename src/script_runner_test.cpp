@@ -55,5 +55,17 @@ BOOST_AUTO_TEST_CASE (chaiscript_format)
         mm::get_format_from_script(file, tag, ctx),
         "foo.txt");
     
-    // TODO - add further scripts to test!
+    // Script referencing tokens.
+    ctx.format_script = fs::path{testdata_dir_str + "/03_tokens.chai"};
+    BOOST_CHECK(fs::exists(ctx.format_script));
+    BOOST_CHECK_EQUAL(
+        mm::get_format_from_script(file, tag, ctx),
+        "%g/%z/%b/%d%n-%a-%t_%%");
+    
+    // Script referencing tag functions.
+    ctx.format_script = fs::path{testdata_dir_str + "/04_tags.chai"};
+    BOOST_CHECK(fs::exists(ctx.format_script));
+    BOOST_CHECK_EQUAL(
+        mm::get_format_from_script(file, tag, ctx),
+        "genre/albumartist/album/discnumbertracknumber-artist-title");
 }

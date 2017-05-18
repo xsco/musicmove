@@ -1,0 +1,5 @@
+var new_path = genre()
+new_path += "/" + album_artist()
+new_path += "/" + album()
+new_path += "/" + disc_number() + track_number() +
+            "-" + artist() + "-" + title();

@@ -1,6 +1,9 @@
 # Extra stuff to clean
 MOSTLYCLEANFILES = musicmove.1 musicmove.html
 
+# Common compilation options
+AM_CXXFLAGS = -Werror -Wall -DCHAISCRIPT_NO_THREADS
+
 # Static libraries, not installed
 noinst_LIBRARIES = libscriptrunner.a libmusicmove.a
 
@@ -8,8 +11,8 @@ libscriptrunner_a_SOURCES = \
 	context.hpp \
 	metadata.hpp \
 	script_runner.cpp script_runner.hpp
-libscriptrunner_a_CPPFLAGS = \
-	-Werror -Wall \
+libscriptrunner_a_CXXFLAGS = \
+	$(AM_CXXFLAGS) \
 	$(TAGLIB_CFLAGS) \
 	$(CHAISCRIPT_CFLAGS)
 
@@ -23,8 +26,8 @@ libmusicmove_a_SOURCES = \
 	move.cpp move.hpp
 
 # Compiler flags.
-libmusicmove_a_CPPFLAGS = \
-	-Werror -Wall \
+libmusicmove_a_CXXFLAGS = \
+	$(AM_CXXFLAGS) \
 	$(TAGLIB_CFLAGS) \
 	$(CHAISCRIPT_CFLAGS)
 
@@ -37,8 +40,8 @@ musicmove_SOURCES = \
 	musicmove.cpp
 
 # Compiler flags.
-musicmove_CPPFLAGS = \
-	-Werror -Wall
+musicmove_CXXFLAGS = \
+	$(AM_CXXFLAGS)
 
 # Additional libraries for the linker.
 musicmove_LDADD = \
@@ -49,7 +52,7 @@ musicmove_LDADD = \
 	$(BOOST_FILESYSTEM_LDADD) \
 	$(BOOST_LOCALE_LDADD) \
 	$(TAGLIB_LDADD) \
-	$(CHAISCRIPT_LDADD) -ldl
+	$(CHAISCRIPT_LDADD)
 
 # Make the man page using help2man
 man_MANS = musicmove.1
@@ -75,8 +78,8 @@ TESTS = $(check_PROGRAMS)
 metadata_test_SOURCES = \
 	metadata_test.cpp \
 	metadata.cpp
-metadata_test_CPPFLAGS = \
-	-Werror -Wall \
+metadata_test_CXXFLAGS = \
+	$(AM_CXXFLAGS) \
 	$(TAGLIB_CFLAGS) \
 	-DTESTDATA_DIR="../testdata"
 metadata_test_LDADD = \
@@ -90,8 +93,8 @@ format_test_SOURCES = \
 	format_test.cpp \
 	metadata_mock.cpp \
 	format.cpp format_easytag.cpp format.hpp
-format_test_CPPFLAGS = \
-	-Werror -Wall \
+format_test_CXXFLAGS = \
+	$(AM_CXXFLAGS) \
 	-DTESTDATA_DIR="../testdata"
 format_test_LDADD = \
 	$(BOOST_SYSTEM_LDADD) \
@@ -103,8 +106,8 @@ format_test_LDADD = \
 script_runner_test_SOURCES = \
 	script_runner_test.cpp \
 	metadata_mock.cpp
-script_runner_test_CPPFLAGS = \
-	-Werror -Wall \
+script_runner_test_CXXFLAGS = \
+	$(AM_CXXFLAGS) \
 	-DTESTDATA_DIR="../testdata"
 script_runner_test_LDADD = \
 	libscriptrunner.a \
@@ -112,7 +115,7 @@ script_runner_test_LDADD = \
 	$(BOOST_FILESYSTEM_LDADD) \
 	$(BOOST_LOCALE_LDADD) \
 	$(BOOST_UTF_LDADD) \
-	$(CHAISCRIPT_LDADD) -ldl
+	$(CHAISCRIPT_LDADD)
 
 # Move test
 move_test_SOURCES = \
@@ -120,13 +123,13 @@ move_test_SOURCES = \
 	move.cpp \
 	format_mock.cpp \
 	metadata_mock.cpp
-move_test_CPPFLAGS = \
-	-Werror -Wall \
+move_test_CXXFLAGS = \
+	$(AM_CXXFLAGS) \
 	-DTESTDATA_DIR="../testdata"
 move_test_LDADD = \
 	libscriptrunner.a \
 	$(BOOST_SYSTEM_LDADD) \
 	$(BOOST_FILESYSTEM_LDADD) \
 	$(BOOST_UTF_LDADD) \
-	$(CHAISCRIPT_LDADD) -ldl
+	$(CHAISCRIPT_LDADD)
 

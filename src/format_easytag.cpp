@@ -141,6 +141,10 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
         new_path_str.append(std::regex_replace(
             get_token_easytag(tag, c), std::regex{"[/\\\\]"}, "-"));
     }
+    // If the string was empty, it means we didn't find any % tokens
+    // In such a case, just use the format as a hard-coded path
+    if (new_path_str == "")
+        new_path_str = format;
     
     // Construct the path, and make sure each element is suitable for writing
     // to the filesystem
@@ -181,6 +185,7 @@ fs::path format_path_easytag(const fs::path &file, const string &format,
     }
     
     // Add file extension
+    // TODO check if the new_path already has the file extension on
     new_path += file.extension();
     return new_path;
 }

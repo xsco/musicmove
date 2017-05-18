@@ -44,7 +44,7 @@ AC_SUBST([BOOST_PROGRAM_OPTIONS_LDADD], [-lboost_program_options])
 AC_SUBST([BOOST_FILESYSTEM_LDADD], [-lboost_filesystem])
 AC_SUBST([BOOST_LOCALE_LDADD], [-lboost_locale])
 AC_SUBST([TAGLIB_LDADD], [$TAGLIB_LIBS])
-AC_SUBST([CHAISCRIPT_LDADD], [-lpthread])
+AC_SUBST([CHAISCRIPT_LDADD], [-ldl])
 AC_SUBST([BOOST_UTF_LDADD], [-lboost_unit_test_framework])
 
 # Path conversion default, which may be OS-specific one day.

@@ -122,10 +122,19 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
     else
     {
         // Read as a file
-        auto file_results = move_file(p, ctx);
-        // Update results for the path
-        ++results.files_processed;
-        results.moved_out_of_parent_dir = file_results.moved_out_of_parent_dir;
+        try
+        {
+            auto file_results = move_file(p, ctx);
+            // Update results for the path
+            ++results.files_processed;
+            results.moved_out_of_parent_dir = file_results.moved_out_of_parent_dir;
+        }
+        catch (std::exception &e)
+        {
+            // Print error and skip onto next file
+            cerr << e.what() << endl;
+            results.moved_out_of_parent_dir = false;
+        }
     }
     
     return results;
@@ -175,6 +184,10 @@ move_results move_file(const fs::path &file, const context &ctx)
     auto format = ctx.use_format_script
         ? get_format_from_script(file, tag, ctx)
         : ctx.format;
+    if (ctx.verbose)
+    {
+        cout << "Using format \"" << format << "\"" << endl;
+    }
     auto new_file = format_path_easytag(file, format, tag, ctx);
     
     // See if the new path is actually any different
@@ -223,14 +236,14 @@ move_results move_file(const fs::path &file, const context &ctx)
     if (ctx.simulate || ctx.verbose)
     {
         if (results.dir_changed && results.filename_changed)
-            cout << "Move/rename " << file.string()
-                 << " to " << new_file.string() << endl;
+            cout << "Move/rename " << file.string() << endl
+                 << "         to " << new_file.string() << endl;
         else if (results.dir_changed)
-            cout << "Move " << file.string()
-                 << " to " << new_file.string() << endl;
+            cout << "Move " << file.string() << endl
+                 << "  to " << new_file.string() << endl;
         else
-            cout << "Rename " << file.string()
-                 << " to " << new_file.filename().string() << endl;
+            cout << "Rename " << file.string() << endl
+                 << "    to " << new_file.filename().string() << endl;
     }
     
     if (!ctx.simulate)

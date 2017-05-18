@@ -101,11 +101,15 @@ int main(int argc, char *argv[])
             "artist if not set), or `%%' for a literal percent sign.")
         ("format-script", po::value<string>(),
             "Path to a file that contains ChaiScript code which can be used "
-            "to move/rename files in different ways.  Constant variables for "
-            "path, filename, and the normal tags will be defined when the "
-            "script runs.  The ChaiScript code must return the new file path "
-            "to work.  If the code returns tokens like `%a' etc, then they "
-            "will be expanded as usual.")
+            "to move/rename files in different ways.  Constant variables are "
+            "provided for path, parent_dir, filename, and filename_stem.  Tags "
+            "may be accessed via the functions artist(), album(), comment(), "
+            "disc_number(), encoded_by(), genre(), track_total(), "
+            "track_number(), original_artist(), composer(), copyright(), "
+            "title(), url(), disc_total(), year(), and album_artist().  The "
+            "ChaiScript code must return the new file path to work.  If the "
+            "code returns tokens like `%a' etc, then they will be expanded as "
+            "usual.")
         ("simulate,s", po::bool_switch(),
             "Simulate renaming, i.e. don't commit any changes to disk. "
             "This is the default.")
@@ -122,7 +126,7 @@ int main(int argc, char *argv[])
             "`posix' is a restrictive but portable approach that permits only "
             "unaccented letters (of either case), numbers, dot, underscore, "
             "and hyphen.\n"
-            "The default is option `" PATH_CONVERSION_DEFAULT_VALUE "'.\n")
+            "The default option is `" PATH_CONVERSION_DEFAULT_VALUE "'.\n")
         ("exit-on-duplicate", po::bool_switch(),
             "Exit if we encounter two files that would be rewritten to the "
             "same path on disk (default is to skip any such duplicates).")
@@ -178,9 +182,8 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    // TODO - implement ChaiScript option to return a format string
     // Do we have a format specified?
-    if (vm.count("format") <= 0 && vm.count("format-script"))
+    if (vm.count("format") <= 0 && vm.count("format-script") <= 0)
     {
         cerr << "No format string or script specified" << endl;
         cerr << "Run `" PACKAGE " --help' for information on usage" << endl;

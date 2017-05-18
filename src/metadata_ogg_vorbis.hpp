@@ -41,13 +41,30 @@ public:
         auto val = base_impl::track_number();
         // Remove leading zeroes
         val.erase(0, std::min(val.find_first_not_of('0'), val.size()-1));
+        // Remove anything after forward slash, if format is "TRACK/TOTAL".
+        auto pos = val.find_first_of('/');
+        if (pos != std::string::npos)
+            val.erase(pos);
         return val;
     }
     virtual std::string track_total() const
     {
         auto val = base_impl::track_total();
-        // Remove leading zeroes
-        val.erase(0, std::min(val.find_first_not_of('0'), val.size()-1));
+        if (val != "")
+        {
+            // Remove leading zeroes
+            val.erase(0, std::min(val.find_first_not_of('0'), val.size()-1));
+            return val;
+        }
+        
+        // Try looking in track number instead
+        val = base_impl::track_number();
+        // Remove up to and including a forward slash if format is TRACK/TOTAL.
+        auto pos = val.find_first_of('/');
+        if (pos != std::string::npos)
+            val.erase(0, std::min(pos + 1, val.size()));
+        else
+            val = "";
         return val;
     }
 };
