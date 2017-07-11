@@ -37,6 +37,7 @@ std::string get_format_from_script(
     
     // Add bound members from metadata
     // TODO - should any embedded percent % signs be escaped?
+    // TODO - offer the convert_for_filesystem() function to scripts
     chai.add(cs::fun(&metadata::album, &tag), "album");
     chai.add(cs::fun(&metadata::album_artist, &tag), "album_artist");
     chai.add(cs::fun(&metadata::artist, &tag), "artist");
