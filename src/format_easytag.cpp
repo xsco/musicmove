@@ -52,7 +52,6 @@ static string get_token_easytag(const metadata &tag, const char c)
     // %y - Year
     // %z - Album artist
     string val;
-    string::size_type i;
     stringstream err_msg;
     switch (c)
     {
