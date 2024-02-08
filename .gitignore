@@ -1,28 +1,12 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Compilation database
+compile_commands.json
+.clangd
 
-# Precompiled Headers
-*.gch
-*.pch
+# IDEs
+.idea
+.vscode
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# CMake typical build dirs
+cmake_build*
+cmake-build*
 
-# Fortran module files
-*.mod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app

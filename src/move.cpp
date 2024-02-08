@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <cerrno>
 
-#include <config.h>
+#include "config.hpp"
 
 #include "metadata.hpp"
 #include "format.hpp"

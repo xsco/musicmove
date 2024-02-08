@@ -14,24 +14,21 @@ For more information, see the main website at http://musicmove.xsco.org
 Compilation
 -----------
 
-musicmove is built using GNU Autotools.  Normally, the following commands should
-be sufficient to configure and build the package:
+musicmove is built using CMake.  Normally, the following commands, issued in
+the base project directory, should be sufficient to configure and build the
+package:
 
-    $ ./autogen.sh
-    $ make
+```
+    $ mkdir cmake-build && cd cmake-build
+    $ cmake ..
+    $ cmake --build .
+```
 
 You can then install the package (with sufficient privileges) by issuing:
 
-    # make install
-
-Any arguments you might normally pass to `configure` can instead be passed
-to `autogen.sh`, such as:
-
-    $ ./autogen.sh --prefix=/usr/custom_directory
-
-or:
-
-    $ ./autogen.sh --help
+```
+    # cmake --install .
+```
 
 Dependencies
 ------------
@@ -42,7 +39,7 @@ musicmove requires suitable versions of the following libraries:
 * [TagLib](http://taglib.org)
 * [ChaiScript](http://chaiscript.com)
 
-The `configure` script should report an error if any of the necessary
+The CMake configuration step should report an error if any of the necessary
 dependencies are missing.
 
 Usage
