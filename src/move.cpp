@@ -30,6 +30,7 @@
 #include "format.hpp"
 #include "script_runner.hpp"
 
+#include <algorithm>
 
 namespace fs = boost::filesystem;
 
@@ -40,7 +41,6 @@ using std::cerr;
 using std::endl;
 using std::string;
 using std::stringstream;
-using std::for_each;
 
 process_results process_path(const fs::path &p, const mm::context &ctx)
 {
@@ -65,24 +65,21 @@ process_results process_path(const fs::path &p, const mm::context &ctx)
         // perfectly named, by definition), so we will copy the list of entries
         // in advance and then iterate over that.
         std::vector<fs::path> sub_paths;
-        std::for_each(
-            fs::directory_iterator{p},
-            fs::directory_iterator{},
-            [&sub_paths](auto &de) { sub_paths.push_back(de.path()); });
-        
-        std::for_each(
-            std::begin(sub_paths),
-            std::end(sub_paths),
-            [&ctx, &results, &dir_entry_count](auto &sub_path)
-            {
-                ++dir_entry_count;
-                // Process the sub-directory
-                auto sub_results = process_path(sub_path, ctx);
-                results.files_processed += sub_results.files_processed;
-                results.dirs_processed += sub_results.dirs_processed;
-                if (sub_results.moved_out_of_parent_dir)
-                    --dir_entry_count;
-            });
+        for (auto iter = fs::directory_iterator{p}; iter != fs::directory_iterator{}; ++iter)
+        {
+            sub_paths.push_back(iter->path());
+        }
+
+        for (const auto& sub_path : sub_paths)
+        {
+            ++dir_entry_count;
+            // Process the sub-directory
+            auto sub_results = process_path(sub_path, ctx);
+            results.files_processed += sub_results.files_processed;
+            results.dirs_processed += sub_results.dirs_processed;
+            if (sub_results.moved_out_of_parent_dir)
+                --dir_entry_count;
+        }
         
         // Is the directory now potentially empty?
         if (dir_entry_count == 0)

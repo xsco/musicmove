@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (path_conversion_posix)
     // Non-printable characters should be converted to underscore
     // Trailing underscores should be removed
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        u8"abcd"
+        "abcd"
         "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009"
         "\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0011\u0012\u0013"
         "\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d"
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE (path_conversion_posix)
     // Accented characters (in UTF-8) should be converted to non-accented
     // 7-bit equivalents; anything else to underscore
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        u8"S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here", ctx),
+        "S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here", ctx),
         "Some_accented_characters_here");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "Basic Latin punctuation:"
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(path_conversion_utf8)
     // Non-printable characters should be converted to underscore
     // Trailing underscores are not removed
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        u8"abcd"
+        "abcd"
         "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009"
         "\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0011\u0012\u0013"
         "\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d"
@@ -145,10 +145,10 @@ BOOST_AUTO_TEST_CASE(path_conversion_utf8)
         "xyzw<>:\"|", ctx),
         "xyzw<>:\"|");
 
-    // Accented characters (in UTF-8) should be be preserved
+    // Accented characters (in UTF-8) should be preserved
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        u8"S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here", ctx),
-        u8"S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here");
+        "S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here", ctx),
+        "S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "Basic Latin punctuation:"
         "\u00a0\u00a1\u00a2\u00a3\u00a4\u00a5\u00a6\u00a7\u00a8"
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(path_conversion_windows)
     // Non-printable characters should be converted to underscore
     // Trailing underscores should be removed
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        u8"abcd"
+        "abcd"
         "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009"
         "\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0011\u0012\u0013"
         "\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d"
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(path_conversion_windows)
     // Accented characters (in UTF-8) should be converted to non-accented
     // 7-bit equivalents; anything else to underscore
     BOOST_CHECK_EQUAL(convert_for_filesystem(
-        u8"S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here", ctx),
+        "S\u00f5m\u00ea \u00e5\u00e7c\u00e9\u00f1ted characters here", ctx),
         "Some accented characters here");
     BOOST_CHECK_EQUAL(convert_for_filesystem(
         "Basic Latin punctuation:"

@@ -1,18 +1,22 @@
-cmake_minimum_required(VERSION 3.16)
-
+cmake_minimum_required(VERSION 3.22)
 project(
         musicmove
-        VERSION 1.1.0
+        VERSION 1.2.0
         DESCRIPTION "Rename and move music files into a structure that aligns with their metadata tags"
 )
 set(PROJECT_HOMEPAGE_URL "https://github.com/xsco/musicmove")
 set(PROJECT_BUGREPORT_URL "https://github.com/xsco/musicmove/issues")
 
+if (POLICY CMP0167)
+    # CMP0167: Don't use FindBoost() any longer.
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 # Include additional modules.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-# Require C++14
-set(CMAKE_CXX_STANDARD 14)
+# Require C++20
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 if (MSVC)
     add_compile_options("/W4" "/wd4251" "/wd4275" "$<$<CONFIG:RELEASE>:/O2>")
@@ -28,19 +32,12 @@ endif ()
 
 # Require boost program_options, filesystem, locale
 find_package(
-        Boost 1.71
+        Boost 1.74
         REQUIRED
         COMPONENTS program_options system filesystem locale unit_test_framework)
 
 # Require taglib 1.x
 find_package(Taglib 1.11.1 REQUIRED)
-
-# Require chaiscript
-include(CheckIncludeFileCXX)
-CHECK_INCLUDE_FILE_CXX(chaiscript/chaiscript.hpp ChaiScript_FOUND)
-if (!ChaiScript_FOUND)
-    message(FATAL_ERROR "Cannot find <chaiscript/chaiscript.hpp>, which is a required dependency")
-endif ()
 
 set(PACKAGE ${CMAKE_PROJECT_NAME})
 set(PACKAGE_STRING ${CMAKE_PROJECT_NAME})
@@ -69,6 +66,8 @@ add_library(
         src/script_runner.hpp
 )
 target_include_directories(libmusicmove PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/src")
+target_include_directories(libmusicmove PRIVATE SYSTEM ext/chaiscript)
+
 target_link_libraries(
         libmusicmove
         Boost::program_options Boost::system Boost::filesystem Boost::locale
